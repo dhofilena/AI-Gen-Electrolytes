@@ -8,16 +8,54 @@ export const product = {
   brand: 'BIOptimizers',
   name: 'Electrolyte Breakthrough',
   tagline: 'Full-Spectrum Hydration & Electrolyte Support',
-  priceRegular: 40.0,
-  priceSale: 32.0,
-  discountPct: 20,
   subscribeSavePct: 12,
   guaranteeDays: 365,
   freeShipOver: 99,
-  servingSize: '1 scoop in 16 oz water',
+  servingSize: '1 stick packet in 16 oz water',
   disclaimer:
     'These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.',
 };
+
+/* PRICING — the real bundle tiers, supplied by the client.
+
+   Supersedes the earlier $40 → $32 figures, which came from scraping a
+   different SKU (the tub) and were the reason bundle tiers were excluded.
+   This is the stick-packet box at $24.99 list.
+
+   ONLY `listPerBox` and the two prices per tier are typed. List totals,
+   per-box prices and every SAVE percentage are DERIVED (see priceView below),
+   so a struck-through price can never drift from the price beside it — the
+   whole point of showing it is that the saving is real.
+
+   Verified against the client's own checkout:
+     5 boxes  list 124.95  once 99.96 ($19.99/box, 20%)  sub 84.97 ($16.99/box, 32%)
+     3 boxes  list  74.97  once 63.72 ($21.24/box, 15%)  sub 54.73 ($18.24/box, 27%)
+     1 box    list  24.99  once 24.99 ($24.99/box,  0%)  sub 21.99 ($21.99/box, 12%)
+   Subscription is an extra 12 points off list on every tier. */
+export const pricing = {
+  listPerBox: 24.99,
+  popularQty: 3,
+  subscribeExtraPct: 12,
+  tiers: [
+    { qty: 5, once: 99.96, sub: 84.97 },
+    { qty: 3, once: 63.72, sub: 54.73 },
+    { qty: 1, once: 24.99, sub: 21.99 },
+  ],
+};
+
+/** Derive everything shown for one tier under one plan. */
+export function priceView(tier, plan = 'once') {
+  const list = +(pricing.listPerBox * tier.qty).toFixed(2);
+  const price = plan === 'sub' ? tier.sub : tier.once;
+  return {
+    qty: tier.qty,
+    list,
+    price,
+    perBox: +(price / tier.qty).toFixed(2),
+    savePct: Math.round(((list - price) / list) * 100),
+    discounted: price < list,
+  };
+}
 
 export const flavors = [
   {

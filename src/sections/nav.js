@@ -21,7 +21,7 @@ import {
   getLenis,
 } from '../lib/scroll.js';
 import { DUR, EASE, EASE_MASK } from '../lib/reveal.js';
-import { nav as navLinks, product } from '../data/content.js';
+import { nav as navLinks, product, pricing } from '../data/content.js';
 
 /* Scroll thresholds — calm, not twitchy. */
 const HIDE_AFTER = 120; // px of continuous downward travel before the bar retracts
@@ -31,7 +31,7 @@ const REVEAL_FALLBACK = 2600; // ms — nav must never stay invisible if the pre
 const money = (n) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
 
 export default function mount(root) {
-  const price = money(product.priceSale);
+  const price = money(pricing.tiers.reduce((lo, t) => Math.min(lo, t.sub / t.qty), Infinity));
   const pad = (i) => String(i + 1).padStart(2, '0');
 
   root.innerHTML = `
@@ -54,7 +54,7 @@ export default function mount(root) {
 
         <div class="nav__actions">
           <a class="nav__cta" href="#offer">
-            <span>Buy</span><span class="nav__cta-price num">${price}</span>
+            <span>Buy</span><span class="nav__cta-price num">from ${price}</span>
           </a>
           <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-panel">
             <span class="u-sr">Menu</span>
@@ -81,7 +81,7 @@ export default function mount(root) {
 
       <div class="nav__pfoot">
         <a class="nav__cta nav__cta--block" href="#offer">
-          <span>Buy</span><span class="nav__cta-price num">${price}</span>
+          <span>Buy</span><span class="nav__cta-price num">from ${price}</span>
         </a>
         <p class="nav__pnote"><span class="num">${product.guaranteeDays}</span>-day money-back guarantee</p>
       </div>

@@ -2,11 +2,17 @@
    PILLARS — bone surface. Rules, space and scale only.
    No cards, no borders, no radii, no boxes.
 
-   The whole section is one drawn field: two vertical accent
-   axes at the column edges, three full-measure hairlines, and
-   four magnitudes hung off the axes. Column gap is ZERO so the
-   hairlines run edge to edge without a break; the separation
-   between columns is made by the axis itself plus padding.
+   The whole section is one drawn field. Each of the two columns
+   OPENS on a vertical accent axis, and every text run in the
+   cell leads from it — index, figure, name, detail, one left
+   spine, ink on the line. Under each figure a hairline runs
+   from that axis to the cell's far edge; the figure sits in a
+   drawn corner, and since all four cells are the same height
+   the two cells of a row read as one continuous line across the
+   measure. Column gap is ZERO so the full-measure hairlines
+   never break; the separation between columns is the axis plus
+   the cell's own trailing inset, which is sized so that no run
+   of type ever approaches a rule.
    ============================================================ */
 
 .pillars {
@@ -42,9 +48,27 @@
 
 .pil__ledger {
   position: relative;
-  /* Column gutter, applied as inner padding on the right-hand column so the
-     hairlines stay continuous across the full measure. */
-  --pil-gutter: clamp(var(--s-5), 2.8vw, var(--s-7));
+  /* Trailing inset on BOTH cells, equal, so the two cells are the same measure
+     and no text run can approach the next column's axis or the field's own
+     edge. It is padding, not a gap, so the hairlines stay continuous.
+
+     3.4vw is the largest inset the longest name will take before it wraps:
+     "Forms of magnesium" is 593px of a 660px cell at 1440 and 489px of 540px
+     at 1180 — 90% of the cell in both — so anything past ~3.6vw breaks one
+     label onto two lines and puts that cell out of step with the other three.
+     Measured at 1440: the longest name in the left column ("Vitamins &
+     minerals") ends 96px clear of the dividing accent rule, and the longest in
+     the right column ("Forms of magnesium") 71px clear of the field edge. */
+  --pil-gutter: clamp(var(--s-6), 3.4vw, var(--s-8));
+  /* One name for the figure's size, because two things need it: the type
+     itself, and the optical lead-in that has to be measured in the same
+     units. Phone swaps the token underneath; nothing else changes. */
+  --pil-fs: var(--fs-mega);
+  /* Optical lead-in, as a RATIO of --pil-fs. pillars.js measures the real ink
+     bearing of each figure off the loaded face and writes this per figure —
+     4 and 9 land near 0.016, 5 near 0.047, the 1 of 12 near 0.094. Zero here
+     is the honest fallback (box alignment) if ink metrics are unavailable. */
+  --pil-lead: 0;
 }
 
 /* The opening rule of the field. */
@@ -67,7 +91,7 @@
 }
 
 /* Brand colour used like light: two hairlines, nothing more.
-   Every figure in the field terminates on one of them. */
+   Every figure in the field LEADS from one of them. */
 .pil__axis {
   position: absolute;
   top: 0;
@@ -77,8 +101,8 @@
   pointer-events: none;
 }
 
-.pil__axis--a { left: 50%; margin-left: calc(-1 * var(--border-hair)); }
-.pil__axis--b { right: 0; }
+.pil__axis--a { left: 0; }
+.pil__axis--b { left: 50%; }
 
 .pil__axis i {
   display: block;
@@ -88,10 +112,15 @@
   transform-origin: 50% 0%;
 }
 
-/* 2 x 2, zero column gap: the rules are continuous, the axis divides. */
+/* 2 x 2, zero column gap: the rules are continuous, the axis divides.
+   grid-auto-rows:1fr, not auto — the four cells have to be ONE height at every
+   viewport, not just at the two we photograph. A single detail line wrapping
+   at some intermediate width is enough to put row 1 at 277px against 322px for
+   the rest, and the field stops reading as a field the moment it does. */
 .pil__rows {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   column-gap: 0;
 }
 
@@ -99,18 +128,22 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  row-gap: clamp(var(--s-3), 1.6vh, var(--s-5));
+  row-gap: 0;
   padding-block: clamp(var(--s-6), 5vh, var(--s-8));
+  /* Trailing inset only — the leading edge IS the axis. */
+  padding-right: var(--pil-gutter);
   align-content: start;
 }
 
-/* The right-hand column is inset from the axis; the left-hand column runs
-   flush to it, so both sets of figures land on a drawn line. */
-.pil__row:nth-child(even) { padding-left: var(--pil-gutter); }
-.pil__row:nth-child(odd)  { padding-right: 0; }
-
+/* ---------- the spine ----------
+   Index, figure, name, detail: four runs at four sizes, all starting on the
+   same left edge, which is the drawn accent axis. Each carries its own
+   optical lead-in (below) so it is the INK that lands on the line and not the
+   glyph box — a 272px figure and an 11px index have side bearings 26px apart,
+   so box alignment here would read as four different left edges. */
 .pil__idx {
   justify-self: start;
+  margin-left: calc(-1em * var(--pil-lead));
   font-size: var(--fs-eyebrow);
   font-weight: 700;
   letter-spacing: var(--ls-eyebrow);
@@ -118,11 +151,17 @@
   line-height: 1;
 }
 
-/* The figures hang off the axis. */
+/* The figure leads from the axis — by its ink, which is what the eye reads,
+   so the box starts a measured side bearing to the LEFT of the line. The shift
+   lives out here rather than on the numeral itself, so the mask travels with
+   it and the reveal clip is never asked to hold a moving target. (--pil-fs
+   rather than 1em because the mega size sits on .pil__n inside; putting it on
+   this box instead would hand the mask a 1.55 strut at 272px.) */
 .pil__figure {
-  justify-self: end;
-  text-align: right;
-  margin-top: clamp(var(--s-2), 1.4vh, var(--s-4));
+  justify-self: start;
+  text-align: left;
+  margin-top: clamp(var(--s-4), 3vh, var(--s-6));
+  margin-left: calc(-1 * var(--pil-fs) * var(--pil-lead));
 }
 
 .pil__mask {
@@ -131,47 +170,80 @@
   /* protect cap-height / baseline from the sub-1 leading, at no layout cost */
   padding-block: 0.11em;
   margin-block: -0.11em;
+  /* Same rescue sideways, and at the FIGURE's scale rather than the inherited
+     body em: --ls-mega pulls the trailing advance in by 0.045em, so the last
+     digit's ink sits flush with the box edge and a flush clip shaves it.
+     Equal and opposite, so nothing moves and the shrink-to-fit width holds. */
+  padding-inline: calc(var(--pil-fs) * 0.06);
+  margin-inline: calc(var(--pil-fs) * -0.06);
 }
 
+/* .t-mega carries the leading and the tracking; this only swaps the SIZE,
+   because phone runs the numeral off --fs-mega-sm. Leading is a function of
+   size and it belongs to the shared tier, not to a section file. */
 .pil__n {
   display: inline-block;
-  font-size: var(--fs-mega);
-  line-height: var(--lh-mega);
-  letter-spacing: var(--ls-mega);
-  font-weight: 700;
+  font-size: var(--pil-fs);
   will-change: transform;
-  /* No optical nudge: --ls-mega already pulls the trailing advance in by
-     0.045em, which lands the ink edge of the last digit on the axis. Any
-     margin here and the figures visibly float off the line. */
 }
 
-/* The name sits flush on the opposite edge — the pair spans the cell. */
+/* The drawn corner. Runs from the axis to the cell's far edge, directly under
+   the figure — so the figure is seen to sit ON something, and the two cells of
+   a row, being the same height, put their rules on one line across the whole
+   measure. This is the alignment made visible rather than implied. */
+.pil__base {
+  display: block;
+  height: var(--border-hair);
+  margin-top: clamp(var(--s-2), 1vh, var(--s-3));
+  /* Out through the cell's trailing inset to its true edge. The inset exists to
+     keep TYPE off the next axis; a hairline running into the axis is a corner
+     join, not a collision, and stopping it short would leave the field's one
+     continuous horizontal broken in two places instead of one. */
+  margin-right: calc(-1 * var(--pil-gutter));
+  background: var(--rule);
+  transform-origin: 0% 50%;
+}
+
+/* The name hangs from the rule, on the spine, directly under the figure.
+   It sits BELOW the figure rather than beside it because it cannot fit beside
+   it: "12" is 302px of a 611px cell at 1440 and "Vitamins & minerals" needs
+   561px more, and there is no viewport where those share a line at the 4.3:1
+   scale contrast this section is built on.
+
+   Full available measure, and no character cap. These names are the only runs
+   wide enough to carry ink out across a left-led cell — "Forms of magnesium"
+   reaches 97% of it, "Vitamins & minerals" 92% — and every character cap tried
+   here (16ch, 13ch) shortened the one element holding the right-hand half of
+   the field open.
+
+   Size, leading and tracking all come from .t-h2 on the element — this rule
+   is layout only. */
 .pil__label {
   justify-self: start;
-  max-width: 16ch;
-  font-size: var(--fs-h2);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-h2);
-  font-weight: 700;
-  text-wrap: balance;
+  text-align: left;
+  margin-left: calc(-1em * var(--pil-lead));
+  margin-top: clamp(var(--s-4), 2.4vh, var(--s-6));
+  max-width: 100%;
 }
 
-/* The detail hangs off the same axis as the figure it belongs to.
-   CLEARANCE — read before removing the padding. The figure is display type
-   whose trailing advance (--ls-mega pulls it in 0.045em) lands its INK on the
-   axis; that is the point of the section. The caption is 15px body text, whose
-   trailing advance is under a pixel, so a flush box put the terminal glyph of
-   "chloride" / "taurate" / "manganese" / "complex" ON the 1px accent rule —
-   measured right edge 370.0px against an axis spanning 369→370 at 390px wide,
-   and at 2x DPR that rule is saturated orange under grey type. The BOX still
-   ends on the axis (the block is still hung off it); the padding insets only
-   the ink, so the alignment idea survives and the collision does not. */
+/* The detail closes the entry on the spine, the fourth and quietest run on it.
+   The old right-hand padding is gone: it existed because at 390px the terminal
+   glyph of "chloride" landed ON the accent axis when that axis ran down the
+   right margin. The axis is the LEADING edge now, this line starts on it
+   instead of ending near it, and the trailing inset keeps every run a real
+   gutter clear of any rule. The collision cannot recur, so neither can the fix. */
 .pil__sub {
-  justify-self: end;
-  text-align: right;
-  max-width: 42ch;
-  margin-top: clamp(var(--s-2), 1.2vh, var(--s-3));
-  padding-right: var(--s-3);
+  justify-self: start;
+  margin-left: calc(-1em * var(--pil-lead));
+  margin-top: clamp(var(--s-4), 2vh, var(--s-5));
+  /* No measure cap. The longest of these is 46 characters — well inside
+     --maxw-text — and capping it only forced a wrap that put one cell out of
+     step with the other three. Unwrapped it also carries ink further across
+     a left-led cell, which is exactly what a left-led cell needs. */
+  /* --fs-small, not --fs-body. 14px is a named rung of this section's scale
+     ladder (272 / 89 / 63 / 26 / 14 / 11) and the figure:name:detail ratio
+     reads 4.3 : 4.5 on it. --fs-body was tried for the extra ink mass and
+     bought 0.1pp — not worth breaking the ladder for. */
   font-size: var(--fs-small);
   line-height: 1.55;
   letter-spacing: var(--ls-body);
@@ -190,8 +262,8 @@
 }
 
 /* ---------- the counterweight: what is absent ----------
-   Same instrument inverted. The field runs down and hangs right;
-   this runs across and reads left. One band, bracketed top and
+   Same instrument inverted. The field runs down a vertical axis;
+   this runs across a horizontal one. One band, bracketed top and
    bottom, no interior cells — figure and word share a baseline. */
 
 .pil__absent {
@@ -240,19 +312,21 @@
 /* ---------- tablet ---------- */
 
 @media (max-width: 1080px) {
-  .pil__label { max-width: 13ch; }
-  .pil__sub { max-width: 34ch; }
   .pil__zv { font-size: var(--fs-lead); }
 }
 
-/* ---------- phone: one column, the same idea at phone scale ----------
-   The axis moves to the right margin and stays drawn; the figure still
-   hangs off it, the detail still hangs off it, the name still sits flush
-   left. Scale contrast is held at ~4:1 (figure : name) so the two
-   viewports express one idea rather than two. --fs-mega bottoms out at
-   5rem on a 390px screen, which is not the magnitude this section is
-   about, so the figure is derived from the token rather than restated.
-   (Requested token: a phone floor for --fs-mega — see report.) */
+/* ---------- phone: one column, the SAME idea at phone scale ----------
+   The axis stays exactly where it is — the leading edge — and stays drawn.
+   All four runs stay on the spine, in the same order, at the same relative
+   sizes; the rule still runs out of the axis to the far edge. Nothing flips
+   and nothing re-aligns, so the two viewports are one design at two sizes
+   rather than two designs. (An earlier build flipped alignment between them
+   and they read as unrelated layouts.)
+
+   --fs-mega-sm is the token for monumental NUMERALS on small screens; at 390
+   it lands 133px against a 32px name, holding the 4.2:1 figure-to-name
+   contrast the desktop plate runs at 4.3:1. (The old derivation,
+   calc(--fs-mega * 1.6), drifted to 7:1 at the top of this range.) */
 
 @media (max-width: 860px) {
   .pillars {
@@ -268,27 +342,25 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .pil__row:nth-child(even) { padding-left: 0; }
-
   .pil__row {
     padding-block: clamp(var(--s-5), 4vh, var(--s-7));
-    row-gap: var(--s-3);
   }
 
-  .pil__axis--a { display: none; }
+  .pil__axis--b { display: none; }
 
-  .pil__n {
-    font-size: calc(var(--fs-mega) * 1.6);
+  .pil__ledger {
+    /* One column: there is no second axis to clear, so the cell takes the full
+       measure and the hairline runs the full measure with it. */
+    --pil-gutter: 0px;
+    --pil-fs: var(--fs-mega-sm);
+  }
+
+  .pil__figure {
+    margin-top: clamp(var(--s-3), 2vh, var(--s-5));
   }
 
   .pil__label {
-    max-width: 15ch;
-    font-size: var(--fs-h2);
-  }
-
-  .pil__sub {
-    max-width: 30ch;
-    font-size: var(--fs-small);
+    margin-top: clamp(var(--s-3), 1.8vh, var(--s-5));
   }
 
   .pil__zeroes {

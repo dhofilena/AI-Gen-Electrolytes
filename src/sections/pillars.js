@@ -2,12 +2,21 @@
    PILLARS — bone. Four magnitudes as ONE drawn field.
 
    The section is a measured plate, not a list of four rows:
-   a 2x2 field divided by TWO vertical accent axes that are
-   actually drawn. Every figure is right-aligned so it hangs
-   off one of those axes, and its detail line hangs off the
-   same axis underneath it — so the alignment idea is visible
-   instead of implied. The name sits flush on the opposite
-   edge, which spans each cell edge to edge.
+   a 2x2 field whose two columns each open on a DRAWN vertical
+   accent axis. Each cell is ONE LEFT SPINE with four runs
+   hanging off it at four sizes — index, figure, name, detail —
+   and it is their INK that sits on the line, not their glyph
+   boxes (see inkLead below). Under each figure a second drawn
+   hairline runs from the spine out to the cell's far edge: the
+   figure sits in a drawn corner, and because all four cells are
+   the same height the two cells of a row put their hairlines on
+   one continuous line across the measure.
+
+   Nothing aligns to the rules on the trailing side. They are
+   dividers, and every cell keeps a real gutter clear of them.
+
+   Reading order is therefore literal: number, then what it is,
+   then what it contains — top to bottom on one spine.
 
    The `zeroes` are the same instrument inverted: horizontal
    instead of vertical, one band instead of a field, figure
@@ -17,10 +26,39 @@
    ============================================================ */
 
 import { gsap, prefersReducedMotion } from '../lib/scroll.js';
-import { revealRise, countUp, EASE, EASE_MASK, DUR, START } from '../lib/reveal.js';
+import { revealRise, countUp, onResize, EASE, EASE_MASK, DUR, START } from '../lib/reveal.js';
 import { pillars, zeroes } from '../data/content.js';
 
 const pad = (i) => String(i + 1).padStart(2, '0');
+
+/* ---- optical lead-in ----------------------------------------------------
+   Four runs at four sizes share one left spine, so it has to be their INK that
+   lands on it, not their glyph boxes. Left side bearings are not uniform and
+   they scale with size: measured on the real face, the figures alone run 4px
+   on 4 and 9, 13px on 5 and 26px on the 1 of 12 at 272px, so box alignment
+   would present the reader with four different left edges in the same cell.
+
+   So measure it, per run, from the font itself: canvas reports the ink
+   bounding box for the exact computed font and tracking. It is returned as a
+   RATIO of the font size, which is a property of the outline and therefore
+   constant across the whole fluid ramp — CSS multiplies it back out, so this
+   runs once and stays correct at every viewport. Returns 0 if the platform
+   has no ink metrics, which simply restores box alignment. */
+function inkLead(el, text) {
+  try {
+    const ctx = (inkLead._c ||= document.createElement('canvas')).getContext('2d');
+    const cs = getComputedStyle(el);
+    const size = parseFloat(cs.fontSize);
+    if (!ctx || !size) return 0;
+    ctx.font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
+    const m = ctx.measureText(text);
+    if (typeof m.actualBoundingBoxLeft !== 'number') return 0;
+    return -m.actualBoundingBoxLeft / size;
+  } catch {
+    return 0;
+  }
+}
 
 export default function mount(root) {
   root.innerHTML = `
@@ -43,9 +81,10 @@ export default function mount(root) {
             <li class="pil__row">
               <span class="pil__idx num" aria-hidden="true">${pad(i)}</span>
               <p class="pil__figure">
-                <span class="pil__mask"><span class="pil__n num" data-to="${p.n}">${p.n}</span></span>
+                <span class="pil__mask"><span class="pil__n num t-mega" data-to="${p.n}">${p.n}</span></span>
               </p>
-              <h3 class="pil__label">${p.label}</h3>
+              <span class="pil__base" aria-hidden="true"></span>
+              <h3 class="pil__label t-h2">${p.label}</h3>
               <p class="pil__sub">${p.sub}</p>
               <span class="pil__rule" aria-hidden="true"></span>
             </li>`
@@ -120,14 +159,40 @@ export default function mount(root) {
     );
   }
 
-  /* ---- each magnitude resolves as its cell enters ---- */
+  /* ---- land every run's ink on the spine it leads from ----
+     Re-run once the webfont has resolved, and on resize, because the ratio is
+     read off whatever face is actually painting. The figure is measured from
+     data-to rather than its text, because countUp owns that text from zero. */
+  const setLead = () => {
+    qa('.pil__row').forEach((row) => {
+      const numEl = row.querySelector('.pil__n');
+      const runs = [
+        [row.querySelector('.pil__figure'), numEl, numEl.dataset.to],
+        [row.querySelector('.pil__idx'), row.querySelector('.pil__idx'), null],
+        [row.querySelector('.pil__label'), row.querySelector('.pil__label'), null],
+        [row.querySelector('.pil__sub'), row.querySelector('.pil__sub'), null],
+      ];
+      runs.forEach(([box, typeEl, text]) => {
+        if (!box || !typeEl) return;
+        box.style.setProperty('--pil-lead', inkLead(typeEl, text ?? typeEl.textContent.trim()));
+      });
+    });
+  };
+  setLead();
+  if (document.fonts?.ready) document.fonts.ready.then(setLead).catch(() => {});
+  onResize(setLead);
+
+  /* ---- each magnitude resolves as its cell enters ----
+     Both hairlines draw LEFT TO RIGHT, out of the axis the figure
+     leads from, so the alignment is seen being made. */
   qa('.pil__row').forEach((row) => {
     const rule = row.querySelector('.pil__rule');
+    const base = row.querySelector('.pil__base');
     const numEl = row.querySelector('.pil__n');
     const to = Number(numEl.dataset.to);
 
     if (prefersReducedMotion) {
-      gsap.set(rule, { scaleX: 1 });
+      gsap.set([rule, base], { scaleX: 1 });
       gsap.set(numEl, { yPercent: 0 });
     } else {
       const tl = gsap.timeline({
@@ -136,6 +201,7 @@ export default function mount(root) {
 
       tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: DUR.slow, ease: EASE_MASK }, 0)
         .fromTo(numEl, { yPercent: 106 }, { yPercent: 0, duration: DUR.slow, ease: EASE }, 0.04)
+        .fromTo(base, { scaleX: 0 }, { scaleX: 1, duration: DUR.slow, ease: EASE_MASK }, 0.12)
         .fromTo(
           [row.querySelector('.pil__idx'), row.querySelector('.pil__label'), row.querySelector('.pil__sub')],
           { y: 22, opacity: 0 },

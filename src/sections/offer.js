@@ -1,31 +1,30 @@
 /* ============================================================
    OFFER — the ask.
 
-   Verified commercial facts only (content.js → product):
-     regular $40.00 · sale $32.00 (20% off) · subscribe & save 12%
-     · free shipping over $99 · 365-day guarantee.
-   No bundle tiers are shown because none could be verified.
-   The subscription discount is disclosed as applied at checkout
-   rather than shown as a derived dollar figure we cannot confirm.
+   Verified commercial facts only, all of them out of content.js:
+     the client's real bundle tiers off one typed list price
+     · subscribe & save 12% · free shipping over $99 · 365-day guarantee.
 
-   THE ASK IS ON THE FIRST SCREEN. The nav's "Buy $32" anchors here and
-   lands at offerTop: 0, so everything the customer needs to act —
-   name, price, delivery, flavour, button — resolves inside the first
-   viewport of the section. The old build put the button 951px down.
+   NOT ONE PRICE, PERCENTAGE OR PER-BOX FIGURE IS TYPED HERE. Every number
+   this file renders comes back from priceView(), and so does the row
+   marker — see bestPerBoxQty(). A struck price beside a live one is a
+   claim, and the only way it stays true through a plan switch is if the
+   section cannot state it independently of the model.
 
-   CHROME: one selector floating on the product image (Oura's move), one
-   hairline delivery row, one button. No radio cards, no chip row, no
-   corner radii — the rest of the page is hairlines and square corners
-   and this section now speaks the same language.
+   ONE DECISION STACK. Flavour, then supply, then subscribe, then the
+   button, in the order the customer makes them, all in one column. On a
+   phone that whole stack is co-visible in a single screen below the
+   gallery; the nav's "Buy" anchor lands at offerTop: 0 and the frame is
+   the only thing between the reader and it.
 
    HONESTY: there is no commerce backend, and the button says so before
    you press it, not after. It confirms a selection; it never simulates
    a purchase or a checkout redirect.
    ============================================================ */
 
-import { gsap, prefersReducedMotion } from '../lib/scroll.js';
+import { gsap, prefersReducedMotion, lockScroll, unlockScroll, getLenis } from '../lib/scroll.js';
 import { revealLines, revealRise, revealMedia, EASE_MASK, DUR, START } from '../lib/reveal.js';
-import { product, flavors, guarantee, gallery } from '../data/content.js';
+import { product, flavors, guarantee, gallery, pricing, priceView } from '../data/content.js';
 
 /* THE PACK SHOT. This frame used to run the three flavour fruit macros — a
    citrus close-up standing in for the product on the one screen where the
@@ -58,18 +57,27 @@ const usd0 = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 
-const PLANS = [
-  { id: 'once', name: 'One-time', note: 'A single delivery.' },
-  {
-    id: 'sub',
-    name: `Subscribe & save ${product.subscribeSavePct}%`,
-    note: `An extra ${product.subscribeSavePct}% off every delivery, applied at checkout.`,
-  },
-];
+const PLAN_NAME = {
+  once: 'One-time',
+  sub: `Subscribe & save ${product.subscribeSavePct}%`,
+};
+
+/* THE ROW MARKER. It used to read "Popular", keyed to pricing.popularQty — a
+   claim about what other customers do, which we have no data for. This says the
+   one directional thing the price list can prove on its own: which tier has the
+   lowest cost per box. DERIVED under the live plan, never typed, so it cannot
+   end up on the wrong row when the subscribe switch re-prices everything.
+   `popularQty` still chooses the row that starts selected; it no longer makes
+   a claim. */
+const FLAG_LABEL = 'Best price per box';
+
+function bestPerBoxQty(plan) {
+  return pricing.tiers.reduce((best, t) =>
+    priceView(t, plan).perBox < priceView(best, plan).perBox ? t : best
+  ).qty;
+}
 
 export default function mount(root) {
-  const sale = usd.format(product.priceSale);
-  const regular = usd.format(product.priceRegular);
   const ship = usd0.format(product.freeShipOver);
 
   root.innerHTML = `
@@ -92,8 +100,11 @@ export default function mount(root) {
               <li class="offer__slide is-on" data-slide="0" role="group"
                   aria-roledescription="slide" aria-label="1 of 1">
                 <span class="media-inner offer__inner">
+                  <!-- draggable=false or the browser starts a native image
+                       drag on pointerdown, fires pointercancel, and the swipe
+                       and tap handlers below never see a pointerup. -->
                   <img class="fill offer__shot" src="${packFor(flavors[0]).src}"
-                       alt="${packFor(flavors[0]).alt}" decoding="async" />
+                       alt="${packFor(flavors[0]).alt}" decoding="async" draggable="false" />
                 </span>
               </li>
             </ul>
@@ -106,6 +117,18 @@ export default function mount(root) {
           <button class="offer__arrow offer__arrow--next" type="button" data-next
                   aria-label="Next image" hidden>
             <span class="offer__chev" aria-hidden="true"></span>
+          </button>
+
+          <!-- READ IT, OR DO NOT SHOW IT. The brand slides are 2000px squares
+               whose type is baked into the artwork; the Supplement Facts panel
+               sets its table at ~28px of a 2000px canvas. In a 350px phone
+               frame that is a 5px row — a slide nobody can read is worse than
+               no slide. This opens the artwork full-screen at a width where the
+               panel is actually legible, and you pan it. Shown on the brand
+               slides only; the pack shot has nothing to magnify. -->
+          <button class="offer__zoombtn" type="button" data-zoomopen
+                  aria-label="View image full size" hidden>
+            <span class="offer__zoomglass" aria-hidden="true"></span>
           </button>
 
           <!-- Selection still has a visible consequence on the frame: the
@@ -121,54 +144,92 @@ export default function mount(root) {
             </span>
 
             <span class="offer__thumbs" data-thumbs hidden></span>
-
-            <span class="offer__pick" role="group" aria-labelledby="offer-picklabel">
-              <span class="offer__picklabel t-eyebrow t-eyebrow--bare" id="offer-picklabel">
-                Choose your flavor
-              </span>
-              <span class="offer__picklist">
-                ${flavors
-                  .map(
-                    (f, i) => `
-                  <label class="offer__swatch${i === 0 ? ' is-on' : ''}" data-flavor="${f.id}">
-                    <input class="offer__radio u-sr" type="radio" name="offer-flavor"
-                           value="${f.id}" aria-label="${f.name}"${i === 0 ? ' checked' : ''} />
-                    <span class="offer__dot" aria-hidden="true"></span>
-                    <span class="offer__swatchname">${f.short}</span>
-                  </label>`
-                  )
-                  .join('')}
-              </span>
-            </span>
           </figcaption>
         </figure>
 
         <div class="offer__buy">
 
-          <div class="offer__price" data-reveal="rise">
-            <p class="offer__now num"><span class="u-sr">Sale price </span>${sale}</p>
-            <p class="offer__meta">
-              <s class="offer__was num"><span class="u-sr">Regular price </span>${regular}</s>
-              <span class="offer__save num">Save ${product.discountPct}%</span>
-            </p>
+          <!-- Flavour lives in the buy column, not on the pack shot. Every
+               decision the customer makes now sits in one place and reads in
+               the order it is made: which flavour, how many, how often. The
+               image still labels itself via the caption, and still re-sources
+               when the flavour changes. -->
+          <fieldset class="offer__pick" data-reveal="rise">
+            <legend class="t-eyebrow t-eyebrow--bare offer__legend">Choose your flavor</legend>
+            <div class="offer__picklist">
+              ${flavors
+                .map(
+                  (f, i) => `
+                <label class="offer__swatch${i === 0 ? ' is-on' : ''}" data-flavor="${f.id}">
+                  <input class="offer__radio u-sr" type="radio" name="offer-flavor"
+                         value="${f.id}" aria-label="${f.name}"${i === 0 ? ' checked' : ''} />
+                  <span class="offer__dot" aria-hidden="true"></span>
+                  <span class="offer__swatchname">${f.short}</span>
+                </label>`
+                )
+                .join('')}
+            </div>
+          </fieldset>
+
+          <!-- BUNDLE TIERS. Every struck price, per-box figure and SAVE badge
+               is derived by priceView() from one typed list price, so the
+               saving shown is always arithmetically true. -->
+          <fieldset class="offer__tiers" data-reveal="rise">
+            <legend class="t-eyebrow t-eyebrow--bare offer__legend">Choose your supply</legend>
+            <div class="offer__tierlist" data-tierlist>
+              ${pricing.tiers
+                .map((t) => {
+                  const v = priceView(t, 'once');
+                  const start = t.qty === pricing.popularQty;
+                  const best = t.qty === bestPerBoxQty('once');
+                  return `
+                <label class="offer__tier${start ? ' is-on' : ''}${t.qty === 1 ? ' is-single' : ''}" data-qty="${t.qty}">
+                  <input class="offer__radio u-sr" type="radio" name="offer-qty"
+                         value="${t.qty}"${start ? ' checked' : ''} />
+                  <span class="offer__tiermark" aria-hidden="true"></span>
+
+                  <span class="offer__tiermain">
+                    <span class="offer__tierline">
+                      <span class="offer__tierqty num">${t.qty}</span>
+                      <span class="offer__tierunit">${t.qty === 1 ? 'box' : 'boxes'}<span class="offer__tierfor"> for</span></span>
+                      <s class="offer__tierlist-was num" data-was><span class="u-sr">Regular price </span>${usd.format(v.list)}</s>
+                      <span class="offer__tiernow num" data-now><span class="u-sr">Your price </span>${usd.format(v.price)}</span>
+                    </span>
+                    <!-- Suppressed on the single box, where the per-box figure
+                         IS the total and the row would print the same pair of
+                         numbers twice. Kept in the DOM and kept current so the
+                         price audit still reads it. -->
+                    <span class="offer__tiersub num">
+                      <s class="offer__perwas" data-perwas${v.discounted ? '' : ' hidden'}>${usd.format(pricing.listPerBox)}</s>
+                      <span data-perbox>${usd.format(v.perBox)}</span> /box
+                    </span>
+                  </span>
+
+                  <span class="offer__tierright">
+                    <span class="offer__tierflag" data-flag${best ? '' : ' hidden'}>${FLAG_LABEL}</span>
+                    <span class="offer__tiersave num" data-save>${v.savePct > 0 ? `Save ${v.savePct}%` : ''}</span>
+                  </span>
+                </label>`;
+                })
+                .join('')}
+            </div>
+          </fieldset>
+
+          <!-- Subscribe toggle. A real checkbox with a switch drawn on it —
+               it re-prices every tier above rather than being a separate
+               delivery choice, which is how the client's own checkout works. -->
+          <div class="offer__subwrap" data-reveal="rise">
+            <label class="offer__sub">
+              <input class="offer__radio u-sr" type="checkbox" data-sub />
+              <span class="offer__switch" aria-hidden="true"><span class="offer__knob"></span></span>
+              <span class="offer__subtext">
+                <span class="offer__subname">Subscribe &amp; save</span>
+                <span class="offer__subnote">Extra ${product.subscribeSavePct}% on any option. Cancel anytime.</span>
+              </span>
+            </label>
           </div>
 
           <p class="offer__serving" data-reveal="fade">${product.servingSize}</p>
-
-          <fieldset class="offer__plan" data-reveal="rise">
-            <legend class="t-eyebrow t-eyebrow--bare offer__legend">Delivery</legend>
-            <div class="offer__opts">
-              ${PLANS.map(
-                (p, i) => `
-                <label class="offer__opt${i === 0 ? ' is-on' : ''}">
-                  <input class="offer__radio u-sr" type="radio" name="offer-plan"
-                         value="${p.id}"${i === 0 ? ' checked' : ''} />
-                  <span class="offer__optname">${p.name}</span>
-                </label>`
-              ).join('')}
-            </div>
-            <p class="offer__planline">${PLANS[0].note}</p>
-          </fieldset>
 
           <!-- THE ASK.
                It was a full-width saturated orange bar — the one object on a
@@ -183,7 +244,9 @@ export default function mount(root) {
             <button class="offer__cta" type="button" data-cta>
               <span class="offer__ctarule" aria-hidden="true"></span>
               <span class="offer__ctalabel">Confirm your selection</span>
-              <span class="offer__ctaprice num">${sale}</span>
+              <span class="offer__ctaprice num" data-ctaprice>${usd.format(
+                priceView(pricing.tiers.find((t) => t.qty === pricing.popularQty), 'once').price
+              )}</span>
             </button>
 
             <p class="offer__note">
@@ -222,16 +285,23 @@ export default function mount(root) {
   const shot = q('.offer__shot');
   const capName = q('.offer__capname');
   const capNote = q('.offer__capnote');
-  const planLine = q('.offer__planline');
   const status = q('.offer__status');
   const cta = q('[data-cta]');
   const ctaLabel = q('.offer__ctalabel');
   const buy = q('.offer__buy');
+  const subInput = q('[data-sub]');
 
-  const state = { plan: PLANS[0].id, flavor: flavors[0].id, confirmed: false };
+  const state = {
+    qty: pricing.popularQty,
+    plan: 'once',
+    flavor: flavors[0].id,
+    confirmed: false,
+  };
 
   const currentFlavor = () => flavors.find((f) => f.id === state.flavor) || flavors[0];
-  const currentPlan = () => PLANS.find((p) => p.id === state.plan) || PLANS[0];
+  const currentTier = () =>
+    pricing.tiers.find((t) => t.qty === state.qty) || pricing.tiers[0];
+  const currentView = () => priceView(currentTier(), state.plan);
 
   /* ---------- selection → visible consequence ---------- */
 
@@ -265,6 +335,7 @@ export default function mount(root) {
   const thumbsEl = q('[data-thumbs]');
   const prevBtn = q('[data-prev]');
   const nextBtn = q('[data-next]');
+  const zoomBtn = q('[data-zoomopen]');
 
   let extra = [];   // brand slides that actually resolved
   let index = 0;
@@ -302,6 +373,7 @@ export default function mount(root) {
       im.alt = g.alt;
       im.decoding = 'async';
       im.loading = 'lazy';
+      im.draggable = false; // see the note on slide 0's <img>
       li.appendChild(im);
       slidesEl.appendChild(li);
     });
@@ -343,7 +415,91 @@ export default function mount(root) {
       b.setAttribute('aria-current', k === index ? 'true' : 'false');
     });
     media?.classList.toggle('is-still', index !== 0);
+    if (zoomBtn) zoomBtn.hidden = index === 0;
   }
+
+  /* ---------- full-size viewer ---------- */
+
+  /* Lives on <body>, not in the figure: the frame clips its own overflow and
+     the section owns a stacking context, so a viewer parked inside either one
+     could not cover the page. It carries data-surface so the shared tokens
+     resolve exactly as they do inside #offer. */
+  document.querySelector('.offer__viewer')?.remove(); // a re-mount must not stack them
+  const viewer = document.createElement('div');
+  viewer.className = 'offer__viewer';
+  viewer.dataset.surface = 'dark';
+  viewer.setAttribute('role', 'dialog');
+  viewer.setAttribute('aria-modal', 'true');
+  viewer.setAttribute('aria-label', `${product.name} image, full size`);
+  viewer.hidden = true;
+  viewer.innerHTML = `
+    <div class="offer__viewerbar">
+      <p class="offer__viewerlabel t-eyebrow t-eyebrow--bare" data-vlabel></p>
+      <button class="offer__viewerclose" type="button" data-vclose aria-label="Close image">
+        <span class="offer__viewerx" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="offer__viewerscroll" data-vscroll>
+      <img class="offer__viewerimg" data-vimg alt="" decoding="async" />
+    </div>
+  `;
+  document.body.appendChild(viewer);
+
+  const vImg = viewer.querySelector('[data-vimg]');
+  const vLabel = viewer.querySelector('[data-vlabel]');
+  const vScroll = viewer.querySelector('[data-vscroll]');
+  let viewerOpener = null;
+  let viewerY = 0;
+
+  function openViewer(i) {
+    const g = extra[i - 1];
+    if (!g) return;
+    viewerOpener = document.activeElement;
+    viewerY = window.scrollY || document.documentElement.scrollTop || 0;
+    vImg.src = g.src;
+    vImg.alt = g.alt;
+    vLabel.textContent = g.label;
+    viewer.hidden = false;
+    lockScroll();
+    vScroll.scrollTop = 0;
+    vScroll.scrollLeft = 0;
+    viewer.querySelector('[data-vclose]').focus({ preventScroll: true });
+  }
+
+  function closeViewer() {
+    if (viewer.hidden) return;
+    viewer.hidden = true;
+    unlockScroll();
+    /* body.is-locked collapses document height, so the browser can clamp the
+       scroll position to 0 while the viewer is open. Put it back. */
+    const l = getLenis();
+    if (l) l.scrollTo(viewerY, { immediate: true, force: true });
+    else window.scrollTo(0, viewerY);
+    viewerOpener?.focus?.({ preventScroll: true });
+    viewerOpener = null;
+  }
+
+  /* Tap anywhere to dismiss, drag to pan. Closing only on the ground around the
+     artwork is a desktop assumption: at 390px the image is wider than the
+     screen, so there IS no ground and the X button became the only way out.
+     Same tap-versus-drag test the slides use, so the two gestures agree. */
+  let vx = 0, vy = 0, vtrack = false;
+  vScroll.addEventListener('pointerdown', (e) => { vx = e.clientX; vy = e.clientY; vtrack = true; });
+  vScroll.addEventListener('pointerup', (e) => {
+    if (!vtrack) return;
+    vtrack = false;
+    if (Math.abs(e.clientX - vx) < 10 && Math.abs(e.clientY - vy) < 10) closeViewer();
+  });
+
+  viewer.addEventListener('click', (e) => {
+    if (e.target.closest('[data-vclose]')) closeViewer();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !viewer.hidden) { e.preventDefault(); closeViewer(); }
+  });
+
+  zoomBtn?.addEventListener('click', () => openViewer(index));
 
   prevBtn?.addEventListener('click', () => show(index - 1));
   nextBtn?.addEventListener('click', () => show(index + 1));
@@ -370,7 +526,10 @@ export default function mount(root) {
     tracking = false;
     const dx = e.clientX - sx;
     const dy = e.clientY - sy;
-    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) { show(index + (dx < 0 ? 1 : -1)); return; }
+    /* A tap that went nowhere, on a brand slide, is a request to read it —
+       the same gesture every phone gallery answers with a full-size view. */
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && index !== 0) openViewer(index);
   });
 
   Promise.all(gallery.map((g) => exists(g.src))).then((ok) => {
@@ -378,9 +537,60 @@ export default function mount(root) {
     renderGallery();
   });
 
+  /* Re-price every tier row for the current plan. Struck list price, live
+     price, per-box figure and SAVE badge all come from priceView(), so a
+     subscribe toggle can never leave a stale number beside a fresh one. */
+  function repriceTiers() {
+    /* Re-derived every time, under the plan actually selected, so the marker
+       can never sit on a row that is no longer the cheapest per box. */
+    const bestQty = bestPerBoxQty(state.plan);
+
+    qa('.offer__tier').forEach((row) => {
+      const qty = Number(row.dataset.qty);
+      const tier = pricing.tiers.find((t) => t.qty === qty);
+      if (!tier) return;
+      const v = priceView(tier, state.plan);
+
+      row.classList.toggle('is-on', qty === state.qty);
+      row.classList.toggle('is-listprice', !v.discounted);
+
+      const flag = row.querySelector('[data-flag]');
+      if (flag) flag.hidden = qty !== bestQty;
+
+      const was = row.querySelector('[data-was]');
+      const now = row.querySelector('[data-now]');
+      const per = row.querySelector('[data-perbox]');
+      const save = row.querySelector('[data-save]');
+
+      if (now) now.innerHTML = `<span class="u-sr">Your price </span>${usd.format(v.price)}`;
+      if (per) per.textContent = usd.format(v.perBox);
+
+      const perWas = row.querySelector('[data-perwas]');
+      if (perWas) {
+        perWas.textContent = usd.format(pricing.listPerBox);
+        perWas.hidden = !v.discounted;
+      }
+
+      /* Hide the strike-through when nothing is actually struck — one box
+         bought outright IS list price, and rendering "$24.99 $24.99" would be
+         a fabricated saving, which is the opposite of the point. */
+      if (was) {
+        was.innerHTML = `<span class="u-sr">Regular price </span>${usd.format(v.list)}`;
+        was.hidden = !v.discounted;
+      }
+      if (save) save.textContent = v.savePct > 0 ? `Save ${v.savePct}%` : '';
+    });
+
+    /* The button carries the total for what is actually selected, so the price
+       you press is the price you chose. */
+    const ctaPrice = q('[data-ctaprice]');
+    if (ctaPrice) ctaPrice.textContent = usd.format(currentView().price);
+  }
+
   function sync() {
     const f = currentFlavor();
-    const p = currentPlan();
+
+    repriceTiers();
 
     /* One attribute re-themes the frame's accent light — and now the product
        on screen changes too, not just the light. */
@@ -400,13 +610,9 @@ export default function mount(root) {
     qa('.offer__swatch').forEach((c) =>
       c.classList.toggle('is-on', c.dataset.flavor === f.id)
     );
-    qa('.offer__opt').forEach((o) =>
-      o.classList.toggle('is-on', o.querySelector('input').value === p.id)
-    );
 
     capName.textContent = f.name;
     capNote.textContent = f.note;
-    planLine.textContent = p.note;
   }
 
   function setConfirmed(on) {
@@ -418,9 +624,11 @@ export default function mount(root) {
 
     if (on) {
       const f = currentFlavor();
-      const p = currentPlan();
+      const v = currentView();
       status.textContent =
-        `${f.name} · ${p.name} · ${usd.format(product.priceSale)} — saved to your selection.`;
+        `${f.name} · ${v.qty} ${v.qty === 1 ? 'box' : 'boxes'} · ${PLAN_NAME[state.plan]} · ` +
+        `${usd.format(v.price)} (${usd.format(v.perBox)} per box) — saved to your selection. ` +
+        `This is a demo build: no checkout is connected.`;
     } else {
       status.textContent = '';
     }
@@ -428,10 +636,15 @@ export default function mount(root) {
   }
 
   root.addEventListener('change', (e) => {
-    const input = e.target.closest('input[type="radio"]');
+    const input = e.target.closest('input');
     if (!input) return;
-    if (input.name === 'offer-plan') state.plan = input.value;
+
+    if (input.name === 'offer-qty') state.qty = Number(input.value);
     if (input.name === 'offer-flavor') state.flavor = input.value;
+    /* The subscribe switch is not a delivery option sitting beside the tiers —
+       it re-prices all of them, exactly as the client's own checkout does. */
+    if (input === subInput) state.plan = input.checked ? 'sub' : 'once';
+
     setConfirmed(false); // changing the order invalidates the confirmation
     sync();
   });
@@ -445,8 +658,20 @@ export default function mount(root) {
   revealLines(q('.offer__title'), { triggerEl: q('.offer__head') });
   revealRise([q('.offer__eyebrow'), q('.offer__tag')], { triggerEl: q('.offer__head') });
   revealMedia(media);
+  /* Filter nulls: the price block and delivery fieldset were replaced by the
+     tier list and subscribe switch, and gsap throws on a null target. */
+  /* Every element carrying data-reveal MUST appear here — base.css holds
+     [data-reveal] at opacity 0 until GSAP takes it over, so one omitted from
+     this list is simply invisible. The flavour fieldset was, when it moved
+     into this column. */
   revealRise(
-    [q('.offer__price'), q('.offer__serving'), q('.offer__plan'), q('.offer__act')],
+    [
+      q('.offer__pick'),
+      q('.offer__tiers'),
+      q('.offer__subwrap'),
+      q('.offer__serving'),
+      q('.offer__act'),
+    ].filter(Boolean),
     { triggerEl: buy, stagger: 0.08 }
   );
   revealRise([q('.offer__closelabel'), ...qa('.offer__assureitem')], {

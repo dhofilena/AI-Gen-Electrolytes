@@ -1,17 +1,36 @@
 /* ============================================================
-   OFFER — the ask. Dark, quiet chrome, one saturated element.
+   OFFER — the ask.
 
-   Everything the customer needs to act sits in the first viewport of
-   the section, because the nav's "Buy" anchor lands at offerTop: 0.
-   Header, price, delivery and the button share the left column; the
-   film-still takes the right and carries the only floating control.
+   DESKTOP: header over the buy column on the left, the gallery spanning
+   both rows on the right.
 
-   Chrome budget: one selector on the image, one hairline delivery row,
-   one button. No bordered radio cards, no chip row, no corner radii.
+   MOBILE is where this converts, and it is a different problem. The frame
+   is SQUARE there — it holds a vertical stick packet and five square brand
+   graphics on a portrait device, and the 16/10 crop it used to run was the
+   smallest frame either could be given. Below it the whole decision stack
+   — flavour, supply, subscribe, button — is co-visible in one screen.
 
-   CONTRAST: prices, serving text and the demo disclosure all sit at
-   --fg-mute or better. --fg-faint is decorative-only per tokens.css and
-   must never carry price or legal text.
+   THREE RULES THIS FILE KEEPS BREAKING AND SHOULD NOT:
+
+   1. .offer__buy's `gap` is the ONLY thing setting distance between blocks
+      in the buy column, and .offer__legend's margin-bottom is the only
+      thing setting label-to-control distance. Every time a child also
+      brought its own margin the column ended up with four different gaps
+      nobody chose — it measured 43 / 35 / 3 / 19px at 390.
+
+   2. Reserve space for the frame's foot with --offer-foot, never with a
+      percentage. Percentage padding resolves against WIDTH; the frame's
+      height is set separately, so a percentage reserves the wrong quantity
+      and does it worst on the narrowest screens.
+
+   3. A class rule that sets `display` beats the UA's `[hidden]`. Anything
+      in this frame that JS hides by attribute needs a matching [hidden]
+      rule here, or it stays on screen.
+
+   CONTRAST: every text run in this section measures >= 6.6:1 composited,
+   including the row marker and the confirmed button, which are ink on
+   accent. --fg-faint is decorative-only per tokens.css and must never
+   carry price or legal text.
    ============================================================ */
 
 .offer {
@@ -38,11 +57,20 @@
   grid-row: 1;
 }
 
+/* Tighter than it was. Adding the flavour selector to this column pushed the
+   button to 931px from the section top — past the fold the nav's Buy link
+   lands on, which is the one thing this section is not allowed to do. The gap
+   carries four rows now, not three, so it pays for the extra row. */
+/* ONE source of vertical rhythm. Every child used to bring its own margin as
+   well — .offer__pick a 24px bottom, .offer__subwrap a 16px top, .offer__serving
+   a NEGATIVE 16px top — which stacked with this gap and produced 38 / 30 / -2 /
+   14px between four consecutive blocks. The gap is bigger now and it is the
+   only thing setting these distances. */
 .offer__buy {
   grid-column: 1;
   grid-row: 2;
   display: grid;
-  gap: clamp(1.25rem, 2.6vh, 2rem);
+  gap: clamp(1.25rem, 2.2vh, 1.75rem);
   align-content: start;
 }
 
@@ -97,12 +125,25 @@
 
 /* ---------- media ---------- */
 
+/* --offer-foot is the vertical space the foot's plate ACTUALLY occupies, so
+   the brand slides can reserve exactly that and no more.
+
+   It replaces `padding-bottom: 30%` on .offer__still. A percentage padding
+   resolves against the element's INLINE size — so in a frame whose height is
+   set independently of its width it reserves the wrong quantity entirely. At
+   390px it took 30% of 350 = 105px out of a 219px frame: 48% of the frame,
+   which shrank the 2000px Supplement Facts panel to a 100px thumbnail. The
+   value is a length now, and it drops again on the brand slides, where the
+   flavour caption is not shown. */
 .offer__media {
+  --offer-foot: 11rem;
   position: relative;
   overflow: hidden;
   margin: 0;
   background: var(--ink-soft);
 }
+
+.offer__media.is-still { --offer-foot: 7.5rem; }
 
 .offer__inner {
   position: absolute;
@@ -182,6 +223,313 @@
   letter-spacing: var(--ls-caps);
 }
 
+/* ---------- bundle tiers ----------
+   The saving has to be felt, so the struck list price and the SAVE badge are
+   given real weight. Kept in the page's language: hairline-bounded rows, one
+   accent, tabular figures, no gradients or heavy fills. */
+
+.offer__tiers { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* EQUAL ROWS, BY CONSTRUCTION — not by the three of them happening to print
+   the same amount of text. They used to be sized one at a time by their own
+   content, so every difference in what a row said became a difference in how
+   tall it was: 113 / 88 / 88px at 1180 once the 5-box price line wrapped, and
+   91 / 91 / 88 at 1440 because the single box carries no per-box line under
+   its price. `1fr` auto-rows in an auto-height grid resolve to the TALLEST
+   row's content and then hand that one height to all three tracks, and the
+   rows stretch into them — so the three choices agree at every width, and go
+   on agreeing whatever the pricing model puts in them.
+
+   margin-top is clearance for the marker riding the first row's top edge —
+   see .offer__tierflag. It is the one length in this column that is reach
+   rather than rhythm, and it is written once, here, for every width. */
+.offer__tierlist {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.offer__tier {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  /* A floor, not the mechanism. The single box carries no per-box line (it
+     would repeat its own total), so without this the shortest row bottomed out
+     at 69px and read as a rendering accident rather than as the simplest
+     option. Equal HEIGHT is now settled a level up by .offer__tierlist's
+     `grid-auto-rows: 1fr`; this only keeps a row that is short in every
+     dimension from collapsing to its text. */
+  min-height: 5.5rem;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.22);
+  background: rgba(244, 241, 234, 0.03);
+  cursor: pointer;
+  transition:
+    background var(--d-fast) var(--e-soft),
+    box-shadow var(--d-fast) var(--e-soft);
+}
+
+.offer__tier:hover {
+  background: rgba(244, 241, 234, 0.06);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.44);
+}
+
+.offer__tier.is-on {
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.offer__tier:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Radio mark, drawn — no native control. */
+.offer__tiermark {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.5);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.offer__tiermark::after {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform var(--d-fast) var(--e-out);
+}
+
+.offer__tier.is-on .offer__tiermark {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.offer__tier.is-on .offer__tiermark::after { transform: scale(1); }
+
+.offer__tiermain { display: grid; gap: var(--s-1); min-width: 0; }
+
+.offer__tierline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+/* The two loudest things in a row were the box COUNT (h3) and then the price
+   (h4) — the number you are choosing between shouted down the number you are
+   paying. Swapped: the live price is the largest token in the row, the count
+   sits a tier below it, and the struck price and the saving keep their weight
+   unchanged. */
+.offer__tierqty {
+  font-size: var(--fs-h4);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+}
+
+.offer__tierunit { font-size: var(--fs-small); color: var(--on-dark-mute); }
+
+/* THE STRIKE. Deliberately legible, not a whisper — it is the reference point
+   that makes the live price mean something. */
+.offer__tierlist-was {
+  font-size: var(--fs-small);
+  color: var(--on-dark-mute);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--accent);
+}
+
+.offer__tiernow {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+  color: var(--on-dark);
+}
+
+.offer__tiersub {
+  font-size: var(--fs-micro);
+  color: var(--on-dark-mute);
+}
+
+/* One box IS its own per-box price. Printing "$24.99 … $24.99 /box" — or, with
+   subscribe on, "$24.99 $21.99" twice over — is the same pair of numbers said
+   twice in four places. The figures stay in the DOM and stay current; the row
+   just stops repeating itself. */
+.offer__tier.is-single .offer__tiersub { display: none; }
+
+/* The right-hand column. It held the flag and the saving as one pair, because
+   as separate grid children the 3-column track ran out and "Save 15%" wrapped
+   under the row. The flag is out of flow now and seated on the row's top edge,
+   so what is left in here is the saving alone — the column asks the price line
+   for nothing it does not need. The flag stays a child of it in the DOM: the
+   two are the same statement about the same row, and it is .offer__tier that
+   positions it either way. */
+.offer__tierright {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.offer__perwas {
+  color: var(--on-dark-mute);
+  text-decoration-line: line-through;
+  text-decoration-color: var(--accent);
+  margin-right: 0.35em;
+}
+
+/* The row marker. Its text is derived in offer.js from the per-box figures, so
+   it states something the table beside it proves — not a claim about other
+   customers we have no data for.
+
+   SEATED ON THE ROW'S TOP EDGE, AT EVERY WIDTH. Above 560px it used to be laid
+   out INLINE beside the saving, where ~165px of badge and gap came straight out
+   of the price line's track. At 1180 that is what broke "5 boxes for $124.95"
+   off "$99.96" onto a second line and made this row 113px against its
+   neighbours' 88px — the row that is meant to be the best deal was the one
+   drawn wrong. Out of flow it costs the layout nothing, the line stays on one
+   line, and the mark reads as what it is: a mark ON this option, not another
+   field inside it. The narrow treatment was already doing exactly this; the
+   only thing that ever made it narrow-only was that the badge FIT above 560px,
+   not that it belonged there. */
+.offer__tierflag {
+  position: absolute;
+  top: 0;
+  left: var(--s-4);
+  z-index: 1;
+  translate: 0 -50%;
+  padding: 0.3em 0.6em;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.offer__tierflag[hidden] { display: none; }
+
+.offer__tiersave {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* A tier with no discount shows no strike and no badge — nothing to claim. */
+.offer__tier.is-listprice .offer__tiersave { display: none; }
+
+/* ---------- subscribe switch ---------- */
+
+/* Spacing comes from .offer__buy's gap alone. This margin stacked on top of it
+   and, with .offer__pick's bottom margin and .offer__serving's NEGATIVE one,
+   made the column's rhythm 43 / 35 / 3 / 19px — four different answers, none
+   of them chosen. */
+.offer__subwrap { margin-top: 0; }
+
+/* It re-prices every tier above it, and it was a 278x42 inline row that read
+   as a footnote to them. Same plate, same hairline, same accent ring as the
+   rows it governs, full column width, and a real touch target. */
+.offer__sub {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.22);
+  background: rgba(244, 241, 234, 0.03);
+  cursor: pointer;
+  transition:
+    background var(--d-fast) var(--e-soft),
+    box-shadow var(--d-fast) var(--e-soft);
+}
+
+.offer__sub:hover {
+  background: rgba(244, 241, 234, 0.06);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.44);
+}
+
+.offer__sub:has(:checked) {
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.offer__switch {
+  position: relative;
+  width: 3rem;
+  height: 1.6rem;
+  border-radius: var(--r-pill);
+  background: rgba(244, 241, 234, 0.14);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.3);
+  flex: none;
+  transition: background var(--d-fast) var(--e-soft), box-shadow var(--d-fast) var(--e-soft);
+}
+
+.offer__knob {
+  position: absolute;
+  top: 50%;
+  left: 0.2rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: var(--r-pill);
+  background: var(--on-dark);
+  translate: 0 -50%;
+  transition: translate var(--d-fast) var(--e-out), background var(--d-fast) var(--e-soft);
+}
+
+.offer__sub:has(:checked) .offer__switch {
+  background: rgba(var(--accent-rgb), 0.34);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.offer__sub:has(:checked) .offer__knob { translate: 1.35rem -50%; background: var(--accent); }
+.offer__sub:has(:focus-visible) .offer__switch { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.offer__subtext { display: grid; gap: 2px; }
+
+.offer__subname {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--on-dark);
+}
+
+.offer__subnote {
+  font-size: var(--fs-micro);
+  color: var(--on-dark-mute);
+}
+
+@media (max-width: 560px) {
+  .offer__tier {
+    min-height: 4.5rem;
+    padding: var(--s-3);
+    gap: var(--s-2);
+  }
+
+  /* The marker's seating on the row's top edge — worked out here first, when a
+     badge wrapping inside the right-hand column made this row 102px against its
+     neighbours' 74px — is now the treatment at every width. See
+     .offer__tierflag above; nothing narrow-specific is left to say about it. */
+
+  /* "5 boxes for $124.95 $99.96" is four tokens on one line inside a ~200px
+     track at 360px, and it wrapped. The preposition is the one part carrying
+     no information — a price list is not a sentence. */
+  .offer__tierfor { display: none; }
+  .offer__tierunit { font-size: var(--fs-micro); }
+  .offer__tierline { gap: 0.3em; }
+  .offer__tiermark { width: 1rem; height: 1rem; }
+}
+
 /* ---------- gallery ---------- */
 
 .offer__gallery { position: absolute; inset: 0; }
@@ -193,6 +541,15 @@
   padding: 0;
   list-style: none;
   touch-action: pan-y; /* let the page scroll; we only claim horizontal drags */
+  user-select: none;   /* a text/image selection drag is not a swipe */
+}
+
+/* Belt and braces with draggable="false" in offer.js: a native image drag
+   cancels the pointer sequence, so the swipe never resolves and neither does
+   tap-to-zoom. */
+.offer__slides img {
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .offer__slide {
@@ -215,10 +572,13 @@
    the caption / thumb rail / flavour tiles rather than behind them. Letting it
    run full-bleed hid the bottom of the Supplement Facts panel — the three
    claim lines and the mark — under the controls. */
+/* Contain, and reserve room for the foot so artwork sits ABOVE the controls
+   rather than behind them — see --offer-foot above for why that reserve is a
+   length and not a percentage of the frame's width. */
 .offer__still {
   object-fit: contain;
   background: var(--ink-soft);
-  padding: var(--s-5) var(--s-5) clamp(9.5rem, 26%, 13rem);
+  padding: var(--s-4) var(--s-4) var(--offer-foot);
 }
 
 /* The brand slides carry their own type and their own light backgrounds, so the
@@ -229,6 +589,12 @@
    untouched above it, the controls stay legible on it. */
 .offer__media.is-still .offer__wash,
 .offer__media.is-still .offer__scrim { opacity: 0; }
+
+/* The flavour caption belongs to the pack shot. Over a Supplement Facts panel
+   it is answering a question nobody asked, in the largest type in the frame,
+   and on a phone it was the tallest thing in the plate that was crushing the
+   artwork. Off on the brand slides — the frame is not showing that flavour. */
+.offer__media.is-still .offer__cap { display: none; }
 
 .offer__foot::before {
   content: '';
@@ -275,8 +641,162 @@
   box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.58);
 }
 
+/* A class rule that sets `display` outranks the UA's `[hidden] { display: none }`,
+   so every control in this frame that JS hides by attribute has to say so in
+   CSS as well. The arrows and the thumb rail were drawn on a single-slide
+   gallery for exactly this reason, and the zoom affordance appeared on the pack
+   shot, where there is nothing to magnify. */
+.offer__arrow[hidden],
+.offer__zoombtn[hidden],
+.offer__thumbs[hidden] { display: none; }
+
 .offer__arrow--prev { left: var(--s-4); }
 .offer__arrow--next { right: var(--s-4); }
+
+/* ---------- full-size viewer ----------
+   The affordance shares the arrows' plate so it reads as part of the same
+   control set, and sits in the one corner of the frame nothing else uses. */
+
+.offer__zoombtn {
+  position: absolute;
+  top: var(--s-4);
+  right: var(--s-4);
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-pill);
+  background: rgba(var(--ink-rgb), 0.62);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--on-dark);
+  cursor: zoom-in;
+  transition: background var(--d-fast) var(--e-soft), box-shadow var(--d-fast) var(--e-soft);
+}
+
+.offer__zoombtn:hover {
+  background: rgba(var(--ink-rgb), 0.85);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.58);
+}
+
+.offer__zoombtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Drawn, like the chevrons — a ring on a handle, no icon set. */
+.offer__zoomglass {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1.5px solid currentColor;
+  border-radius: var(--r-pill);
+  translate: -1px -1px;
+}
+
+.offer__zoomglass::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  width: 0.4rem;
+  height: 1.5px;
+  background: currentColor;
+  transform-origin: left center;
+  rotate: 45deg;
+  translate: -2px -1px;
+}
+
+/* The whole brand slide is the target too — tapping an image to read it is the
+   gesture people already have. */
+.offer__media.is-still .offer__slides { cursor: zoom-in; }
+
+.offer__viewer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: rgba(var(--ink-rgb), 0.97);
+}
+
+.offer__viewer[hidden] { display: none; }
+
+.offer__viewerbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4) var(--s-3) var(--gutter);
+  border-bottom: var(--border-hair) solid var(--rule);
+}
+
+.offer__viewerlabel {
+  color: var(--fg-mute);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.offer__viewerclose {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-pill);
+  background: rgba(244, 241, 234, 0.06);
+  box-shadow: inset 0 0 0 var(--border-hair) var(--rule);
+  color: var(--fg);
+  cursor: pointer;
+  transition: background var(--d-fast) var(--e-soft);
+}
+
+.offer__viewerclose:hover { background: rgba(244, 241, 234, 0.14); }
+.offer__viewerclose:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.offer__viewerx {
+  position: relative;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.offer__viewerx::before,
+.offer__viewerx::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+}
+.offer__viewerx::before { rotate: 45deg; }
+.offer__viewerx::after { rotate: -45deg; }
+
+/* Pan, do not shrink. The artwork is rendered wide enough that the Supplement
+   Facts table is readable and you scroll it — fitting a 2000px panel into a
+   phone's width is exactly the failure this view exists to answer. */
+.offer__viewerscroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  align-content: start;
+  /* `safe` matters: plain centring on content wider than its box overflows in
+     BOTH directions and the left edge — the row labels the whole table depends
+     on — becomes unreachable by scrolling. It falls back to start when the
+     artwork is wider than the screen, and centres it when it is not. */
+  justify-content: safe center;
+  cursor: zoom-out;
+}
+
+.offer__viewerimg {
+  display: block;
+  width: max(100%, 62rem);
+  max-width: none;
+  height: auto;
+}
 
 /* Chevron drawn from two rules — no icon set. */
 .offer__chev {
@@ -293,7 +813,7 @@
    phone. Labels stay on one line each so the rail height is stable. */
 .offer__thumbs {
   display: flex;
-  gap: var(--s-4);
+  gap: var(--s-3);
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
@@ -309,7 +829,11 @@
 
 .offer__thumb {
   display: grid;
+  align-content: end;
   gap: var(--s-2);
+  /* Was 40px on every viewport. The bar and label sit at the bottom of the
+     target, so the extra height is silent reach, not a taller rail. */
+  min-height: 2.75rem;
   padding-block: var(--s-2);
   flex: 0 0 auto;
   scroll-snap-align: start;
@@ -377,16 +901,19 @@
    is behind it, a hairline border so it reads as a button, and a colour chip
    large enough to see. Square corners and hairlines keep it in the page's
    language — this is deliberately not a pill row. */
+/* Moved off the pack shot into the buy column, so it no longer needs a plate
+   and a blur to survive whatever is behind it — it sits on the section ground
+   and matches the tier rows' language instead. */
 .offer__pick {
-  display: grid;
-  gap: var(--s-3);
-  flex: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
 }
 
-.offer__picklabel {
-  color: var(--on-dark-mute);
-}
-
+/* No margin-top: .offer__legend's margin-bottom already sets the distance from
+   the label to the control it labels. Both were set, and the two fieldsets each
+   carried 24px where 24px was wanted once. */
 .offer__picklist {
   display: flex;
   align-items: stretch;
@@ -399,13 +926,14 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-3);
+  /* 2.75rem is the touch floor everything interactive in this section is held
+     to. At 360 and 390 these measured 43px on the padding alone. */
+  min-height: 2.75rem;
   padding: var(--s-3) var(--s-4);
-  border: var(--border-hair) solid rgba(var(--ink-rgb), 0);
+  border: 0;
   border-radius: var(--r-md);
-  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.28);
-  background: rgba(var(--ink-rgb), 0.62);
-  backdrop-filter: blur(10px) saturate(1.15);
-  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.22);
+  background: rgba(244, 241, 234, 0.03);
   cursor: pointer;
   font-size: var(--fs-small);
   color: var(--on-dark-mute);
@@ -435,14 +963,16 @@
 
 .offer__swatch:hover {
   color: var(--on-dark);
-  background: rgba(var(--ink-rgb), 0.78);
-  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.58);
+  background: rgba(244, 241, 234, 0.06);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.44);
 }
 
+/* Selected state matches the tier rows exactly — same accent wash, same 1.5px
+   accent ring — so the three choices in this column read as one control set. */
 .offer__swatch.is-on {
   color: var(--on-dark);
-  background: rgba(var(--ink-rgb), 0.88);
-  box-shadow: inset 0 0 0 var(--border-hair) rgba(var(--accent-rgb), 0.85);
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
 .offer__swatch.is-on::after { transform: scaleX(1); }
@@ -468,124 +998,24 @@
 
 .offer__swatch.is-on .offer__dot { transform: scale(1.12); }
 
-/* ---------- price ---------- */
-
-.offer__price {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-3) var(--s-4);
-}
-
-.offer__now {
-  font-size: var(--fs-h2);
-  line-height: 1;
-  letter-spacing: var(--ls-h2);
-  font-weight: 700;
-  color: var(--fg);
-}
-
-.offer__meta {
-  display: flex;
-  align-items: baseline;
-  gap: var(--s-4);
-}
-
-/* Price text. --fg-mute is the floor: a struck price is still a price. */
-.offer__was {
-  font-size: var(--fs-body);
-  color: var(--fg-mute);
-  text-decoration-thickness: var(--border-hair);
-  text-underline-offset: 0;
-}
-
-.offer__save {
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--ls-caps);
-  color: var(--accent);
-}
+/* ---------- serving line ---------- */
 
 .offer__serving {
   font-size: var(--fs-small);
   line-height: 1.5;
   color: var(--fg-mute);
-  margin-top: calc(var(--s-4) * -1);
 }
 
-/* ---------- delivery ----------
-   A hairline row, not two bordered cards. The accent segment that marks
-   the choice is the same device the benefits list uses for its reading
-   line, so the page keeps one vocabulary. */
-
-.offer__plan {
-  display: block;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  min-inline-size: 0;
-}
-
-/* Held clear of the row's hairline so the accent segment reads as the mark
-   on the row, not as an underline on the word "Delivery". */
+/* ---------- fieldset legends ----------
+   Shared by "Choose your flavor" and "Choose your supply". This is the ONLY
+   thing setting the distance from a label to the control it labels — the two
+   lists carry no margin-top of their own, because when they did every group
+   in the column paid for that gap twice. */
 .offer__legend {
   display: block;
   padding: 0;
   margin-bottom: var(--s-5);
   color: var(--fg-mute);
-}
-
-.offer__opts {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--s-7);
-  border-top: var(--border-hair) solid var(--rule);
-}
-
-.offer__opt {
-  position: relative;
-  padding-block: var(--s-4) var(--s-3);
-  cursor: pointer;
-}
-
-.offer__opt::after {
-  content: '';
-  position: absolute;
-  top: calc(var(--border-hair) * -1);
-  left: 0;
-  right: 0;
-  height: var(--border-hair);
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--d-mid) var(--e-out);
-}
-
-.offer__opt.is-on::after { transform: scaleX(1); }
-
-.offer__opt:has(:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-}
-
-.offer__optname {
-  font-size: var(--fs-body);
-  font-weight: 700;
-  letter-spacing: var(--ls-body);
-  color: var(--fg-mute);
-  transition: color var(--d-fast) var(--e-soft);
-}
-
-.offer__opt:hover .offer__optname,
-.offer__opt.is-on .offer__optname { color: var(--fg); }
-
-.offer__planline {
-  margin-top: var(--s-3);
-  font-size: var(--fs-small);
-  line-height: 1.5;
-  color: var(--fg-mute);
-  max-width: 46ch;
 }
 
 /* ---------- the ask ---------- */
@@ -676,15 +1106,25 @@
   transition: color var(--d-fast) var(--e-soft);
 }
 
-/* Answered: the accent leaves the ask and the plate flattens back into the
-   surface, so the live ask is always the only thing wearing brand colour. */
+/* ANSWERED. This used to drain: accent off, plate to transparent, rule and
+   price to --fg-mute. Every one of those is a disabled-control signal, so the
+   one moment the customer has committed was drawn as the moment the button
+   stopped working. It lands on the accent instead — the same flood the press
+   itself produces, held. Confirmed is further along than resting, so it reads
+   heavier, not lighter. */
 .offer__cta.is-confirmed {
-  background: transparent;
-  box-shadow: inset 0 0 0 var(--border-hair) var(--fg-mute);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: inset 0 0 0 var(--border-hair) var(--accent);
 }
 
-.offer__cta.is-confirmed .offer__ctarule { background: var(--fg-mute); }
-.offer__cta.is-confirmed .offer__ctaprice { color: var(--fg-mute); }
+.offer__cta.is-confirmed .offer__ctarule { background: var(--accent-ink); }
+.offer__cta.is-confirmed .offer__ctaprice { color: var(--accent-ink); }
+
+/* The ::after flood is accent-on-accent here, so hover must not swap the label
+   to --ink over it — on the berry accent that would be 1.6:1. */
+.offer__cta.is-confirmed:hover,
+.offer__cta.is-confirmed:focus-visible { color: var(--accent-ink); }
 
 .offer__ctaprice { font-weight: 700; }
 
@@ -748,14 +1188,9 @@
     column-gap: clamp(2rem, 4vw, 3.5rem);
   }
 
-  .offer__foot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--s-4);
-    padding: var(--s-5);
-  }
-
-  .offer__pick { gap: var(--s-4); }
+  .offer__foot { padding: var(--s-5); }
+  .offer__media { --offer-foot: 10rem; }
+  .offer__media.is-still { --offer-foot: 6.5rem; }
 }
 
 @media (max-width: 860px) {
@@ -778,6 +1213,10 @@
   .offer__media { grid-column: 1; grid-row: 2; }
   .offer__buy { grid-column: 1; grid-row: 3; }
 
+  /* The eyebrow's own clamp is written for a desktop column. On a phone it put
+     20px between a 11px label and the headline it belongs to. */
+  .offer__eyebrow { margin-bottom: var(--s-3); }
+
   .offer__close {
     grid-column: 1;
     grid-row: 4;
@@ -790,35 +1229,65 @@
     gap: var(--s-3);
   }
 
+  /* THE FRAME. It was 16/10 — a landscape crop, on a portrait device, holding
+     a vertical stick packet and five SQUARE brand graphics. At 390px that is a
+     219px-tall frame: the smallest the gallery can possibly be on the screen
+     where this section converts, which is what "the images got smaller" was.
+     Square instead, so the frame matches its contents and the phone's axis.
+
+     Capped in vh because the cap only bites on short viewports — a 667px
+     iPhone SE keeps the button closer rather than paying full height for the
+     image. At 844 and above the square wins and nothing is clipped. */
   .offer__media {
     min-height: 0;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1 / 1;
+    max-height: 46vh;
+    --offer-foot: 7.5rem;
   }
 
-  /* Stacked, the frame's foot reads top-to-bottom like the rest of the
-     column: what you picked, then what you can pick. A vertical swatch
-     stack would force the image taller for no gain. */
+  .offer__media.is-still { --offer-foot: 5rem; }
+
+  /* Off. They are 44px discs pinned to the middle of the frame, over the
+     product — the prev arrow was landing on the product NAME, which rendered
+     as "Th‹ve Lemonade" in every mobile capture. Touch has a swipe and six
+     direct targets in the rail below; it does not need a pair of buttons
+     standing on the thing it came to look at. */
+  .offer__arrow { display: none; }
+
   .offer__foot {
-    flex-direction: column;
-    align-items: flex-start;
     gap: var(--s-3);
     padding: var(--s-4);
   }
 
   .offer__cap { gap: 0; }
 
-  /* .offer__pick is a grid (label over list) — do not set flex-direction here.
-     The tiles keep their plate and border on mobile; they just tighten.
-     Vertical padding stays at --s-3: at --s-2 the tiles measured 37px tall,
-     under the 44px minimum touch target. */
-  .offer__pick { gap: var(--s-2); }
+  /* THE RAIL. Six labelled thumbs measured 733px of content inside a 326px
+     frame — 55% of it off-screen with no scrollbar, "SUPPLEMENT FACTS" clipped
+     mid-word, and three slides no one could reach. A phone gallery's rail has
+     one job: say how many there are and which one you are on. Six equal
+     segments do that in one row, in view, at a real touch size; the artwork
+     itself carries the label once it is big enough to read. */
+  .offer__thumbs {
+    gap: var(--s-2);
+    overflow: visible;
+    padding-bottom: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .offer__thumb {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-block: 0;
+  }
+
+  .offer__thumblabel { display: none; }
+  .offer__thumbbar { height: 3px; }
+
   .offer__swatch { padding: var(--s-3); gap: var(--s-2); }
   .offer__dot { width: 0.8rem; height: 0.8rem; }
 
   .offer__tag { margin-top: var(--s-3); }
-  .offer__legend { margin-bottom: var(--s-3); }
-  .offer__opt { padding-block: var(--s-3) var(--s-2); }
-  .offer__planline { margin-top: var(--s-2); }
 
   .offer__cta {
     min-height: 3.75rem;
@@ -826,11 +1295,12 @@
     font-size: var(--fs-lead);
   }
 
-  .offer__opts { column-gap: var(--s-6); }
+  .offer__viewerbar { padding-inline: var(--s-4) var(--s-3); }
 }
 
 @media (max-width: 420px) {
   .offer__foot { padding: var(--s-3); }
+  .offer__media { --offer-foot: 7rem; }
+  .offer__media.is-still { --offer-foot: 4.5rem; }
   .offer__swatch { font-size: var(--fs-micro); }
-  .offer__opts { column-gap: var(--s-5); }
 }
