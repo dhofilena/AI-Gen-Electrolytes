@@ -1,0 +1,146 @@
+{
+  "updated": "2026-08-10T01:54:06.273Z",
+  "pct": 100,
+  "pieces": [
+    {
+      "id": "preloader",
+      "name": "Preloader",
+      "blurb": "Brand load sequence",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "nav",
+      "name": "Navigation",
+      "blurb": "Scroll-aware header + CTA",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "hero",
+      "name": "Hero",
+      "blurb": "Full-bleed dissolve film, kinetic type",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "myth",
+      "name": "The Sodium Myth",
+      "blurb": "The category is solving the wrong problem",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "science",
+      "name": "Cell Science",
+      "blurb": "610mg K : 200mg Na, the 3:1 ratio",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "pillars",
+      "name": "Pillars",
+      "blurb": "5 / 4 / 12 / 9 formulation numbers",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "formula",
+      "name": "The Formula",
+      "blurb": "Three years, ingredients, sweeteners",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "flavors",
+      "name": "Flavors",
+      "blurb": "Three flavors, colour-themed, vertical film",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "ritual",
+      "name": "The Ritual",
+      "blurb": "Lifestyle, the daily pour",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "compare",
+      "name": "Comparison",
+      "blurb": "Animated head-to-head vs 5 competitors",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "benefits",
+      "name": "Benefits",
+      "blurb": "Eight systems supported",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "proof",
+      "name": "Proof",
+      "blurb": "Guarantee, certifications, trust",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "offer",
+      "name": "The Offer",
+      "blurb": "Pricing, subscribe, primary CTA",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "faq",
+      "name": "FAQ",
+      "blurb": "Objection handling",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    },
+    {
+      "id": "footer",
+      "name": "Footer",
+      "blurb": "Close + compliance",
+      "phase": "passed",
+      "round": 9,
+      "verdict": "ours",
+      "note": "Round 9: passed final blind review — ranked 1st vs Polestar 3 and Oura Ring 4 on both whole page and opening viewport."
+    }
+  ],
+  "global": {
+    "phase": "passed",
+    "round": 3,
+    "note": "Whole-page coherence: one seam rhythm in tokens replaces nine ad-hoc section gaps, leading tiered by size in base.css, one entrance trigger line, certifications and the guarantee terms each stated once, bone->white boundary made visible, myth odometer no longer rests on 00%."
+  }
+}

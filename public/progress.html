@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Build progress — Electrolyte Breakthrough</title>
+<style>
+  :root{
+    --ink:#0b0d12; --soft:#14171e; --line:rgba(244,241,234,.12);
+    --fg:#f4f1ea; --mute:rgba(244,241,234,.55); --faint:rgba(244,241,234,.3);
+    --orange:#f1882c; --berry:#921a4a; --lemon:#f9ed7f; --tropical:#f89d72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--fg);
+    font:14px/1.5 ui-sans-serif,-apple-system,'Segoe UI',sans-serif;
+    padding:clamp(20px,4vw,56px);letter-spacing:-.01em}
+  header{display:flex;justify-content:space-between;align-items:flex-end;
+    gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px}
+  h1{font-size:clamp(20px,2.4vw,30px);margin:0;font-weight:700;letter-spacing:-.03em}
+  .sub{color:var(--mute);margin-top:6px;font-size:13px}
+  .pct{font-size:clamp(38px,7vw,76px);font-weight:700;letter-spacing:-.045em;
+    line-height:.9;font-variant-numeric:tabular-nums}
+  .bar{height:3px;background:var(--soft);margin:26px 0 34px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--berry),var(--orange),var(--lemon));
+    transition:width .8s cubic-bezier(.16,1,.3,1)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--faint);font-weight:700;padding:0 12px 12px 0}
+  td{padding:15px 12px 15px 0;border-top:1px solid var(--line);vertical-align:top}
+  tr:hover td{background:rgba(244,241,234,.02)}
+  .nm{font-weight:700;letter-spacing:-.02em}
+  .bl{color:var(--faint);font-size:12px;margin-top:3px}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:99px;white-space:nowrap}
+  .dot{width:5px;height:5px;border-radius:99px;background:currentColor;flex:none}
+  .queued  {color:var(--faint);      background:rgba(244,241,234,.06)}
+  .building{color:var(--lemon);      background:rgba(249,237,127,.1)}
+  .review  {color:var(--tropical);   background:rgba(248,157,114,.12)}
+  .revising{color:var(--orange);     background:rgba(241,136,44,.13)}
+  .passed  {color:#7ee0a8;           background:rgba(126,224,168,.1)}
+  .building .dot,.review .dot,.revising .dot{animation:p 1.3s ease-in-out infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+  .rd{font-variant-numeric:tabular-nums;color:var(--mute);font-size:12px}
+  .note{color:var(--mute);font-size:12.5px;max-width:52ch;text-wrap:pretty}
+  .verdict{font-size:12px;font-weight:700}
+  .win{color:#7ee0a8}.lose{color:var(--orange)}
+  footer{margin-top:32px;color:var(--faint);font-size:11.5px;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .live{display:inline-flex;align-items:center;gap:6px}
+  .live i{width:5px;height:5px;border-radius:99px;background:#7ee0a8;animation:p 1.6s infinite}
+  @media(max-width:720px){.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Electrolyte Breakthrough — build</h1>
+    <div class="sub">Each piece is built, then judged blind against Oura Ring 4 &amp; Polestar 3 by a fresh critic.</div>
+  </div>
+  <div class="pct" id="pct">0<span style="font-size:.42em">%</span></div>
+</header>
+
+<div class="bar"><i id="fill" style="width:0%"></i></div>
+
+<table>
+  <thead><tr>
+    <th style="width:30%">Piece</th><th style="width:120px">Phase</th>
+    <th style="width:70px">Round</th><th class="hide-sm">Latest critic note</th>
+  </tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<footer>
+  <span class="live"><i></i> live — polling every 2.5s</span>
+  <span id="stamp"></span>
+</footer>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function tick(){
+  let d;
+  try { d = await (await fetch('/progress.json?t=' + Date.now())).json(); }
+  catch { return; }
+
+  document.getElementById('pct').innerHTML = d.pct + '<span style="font-size:.42em">%</span>';
+  document.getElementById('fill').style.width = d.pct + '%';
+  document.getElementById('stamp').textContent = 'updated ' + new Date(d.updated).toLocaleTimeString();
+
+  document.getElementById('rows').innerHTML = d.pieces.map(p => {
+    const v = p.verdict
+      ? `<div class="verdict ${p.verdict === 'ours' ? 'win' : 'lose'}">${
+          p.verdict === 'ours' ? '✦ beats reference' : '△ reference still ahead'}</div>`
+      : '';
+    return `<tr>
+      <td><div class="nm">${esc(p.name)}</div><div class="bl">${esc(p.blurb)}</div></td>
+      <td><span class="tag ${esc(p.phase)}"><i class="dot"></i>${esc(p.phase)}</span></td>
+      <td class="rd">${p.round || '—'}</td>
+      <td class="hide-sm">${v}<div class="note">${esc(p.note)}</div></td>
+    </tr>`;
+  }).join('');
+}
+tick(); setInterval(tick, 2500);
+</script>
+</body>
+</html>

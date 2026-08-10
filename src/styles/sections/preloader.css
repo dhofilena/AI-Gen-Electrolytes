@@ -1,0 +1,105 @@
+﻿/* ============================================================
+   PRELOADER â€” owned by the preloader section agent.
+   Deep ink curtain, centred wordmark, hairline progress rule.
+   Tokens only.
+   ============================================================ */
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-preloader);
+  pointer-events: auto;
+}
+
+.preloader[hidden] {
+  display: none;
+}
+
+.pre__panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  justify-items: center;
+  background: var(--ink);
+  color: var(--on-dark);
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* ---------- wordmark ---------- */
+
+.pre__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-inline: var(--gutter);
+  will-change: transform;
+}
+
+.pre__mask {
+  display: block;
+  overflow: hidden;
+}
+
+.pre__mask--sub {
+  margin-top: var(--s-4);
+}
+
+.pre__mark {
+  display: block;
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h2);
+  color: var(--on-dark);
+  will-change: transform;
+}
+
+.pre__sub {
+  display: block;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--on-dark-mute);
+  will-change: transform;
+}
+
+/* ---------- honest progress rule ---------- */
+
+.pre__rule {
+  position: relative;
+  justify-self: stretch;
+  height: var(--border-hair);
+  margin-inline: var(--gutter);
+  margin-bottom: calc(var(--s-7) + env(safe-area-inset-bottom, 0px));
+  background: var(--rule-dark);
+  overflow: hidden;
+}
+
+.pre__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--dreamsicle);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+@media (max-width: 860px) {
+  .pre__rule {
+    margin-bottom: calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* The module no-ops entirely under reduced motion, but belt and braces:
+   nothing here should ever be able to sit over the page. */
+@media (prefers-reduced-motion: reduce) {
+  .preloader {
+    display: none;
+  }
+}

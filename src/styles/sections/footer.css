@@ -1,0 +1,396 @@
+/* ============================================================
+   FOOTER — dark surface. Typographic close, then a structured
+   band, then small print. <footer> is not .section, so it owns
+   its own surface + rhythm. Tokens only.
+   ============================================================ */
+
+.footer {
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  /* Seam rhythm (tokens.css). */
+  padding-top: var(--seam);
+  /* The close should land, not drain away. --s-7 rather than --s-8 keeps the
+     trailing void under the small print tight instead of slack. */
+  padding-bottom: calc(var(--s-7) + env(safe-area-inset-bottom, 0px));
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Full-bleed seam: a deliberate edge between the offer and the close. */
+.footer__seam {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: var(--border-hair);
+  background: var(--rule);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+/* ---------- the closing statement ---------- */
+
+/* Display wordmark on the left, certification marks bottom-anchored on the
+   right. Flex, not grid, and deliberately: .footer__lede is never given
+   min-width:0, so its min-content width is the width of "Breakthrough" — the
+   marks column can therefore never squeeze the wordmark, it can only wrap
+   below it. That is the safe failure mode. */
+.footer__close {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  column-gap: clamp(var(--s-7), 5vw, var(--s-9));
+  row-gap: clamp(var(--s-7), 6vw, var(--s-8));
+}
+
+.footer__lede { flex: 0 1 auto; }
+
+.footer__marks { flex: 0 0 clamp(15rem, 24vw, 23rem); }
+
+.footer__kicker { margin-bottom: clamp(var(--s-6), 4vw, var(--s-8)); }
+
+.footer .footer__name {
+  text-wrap: initial;
+  color: var(--fg);
+}
+
+/* NOTE — descender rescue.
+   Do NOT reintroduce a padding-bottom / margin-bottom / line-height override
+   for .footer__name .line-mask here. base.css derives both the mask padding
+   and its compensating negative margin from a single --mask-rescue custom
+   property so they can never diverge. The previous local override set
+   padding-bottom: 0.14em against base's -0.18em margin: the clip box came out
+   at 120px against 154px of glyph and sheared the 'y' off "Electrolyte" and
+   the 'g' off "Breakthrough" at every viewport. If this wordmark ever needs a
+   deeper rescue, set --mask-rescue alone. */
+
+/* ---------- rule row: brand ───────────── back to top ---------- */
+
+.footer__rule-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--s-5), 3vw, var(--s-7));
+  margin-top: clamp(var(--s-8), 11vh, var(--s-10));
+}
+
+.footer__hair {
+  flex: 1 1 auto;
+  min-width: var(--s-6);
+  height: var(--border-hair);
+  background: var(--rule);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+.footer__wordmark {
+  flex: none;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-caps);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* Back to top */
+
+.footer__top {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-small);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--fg-mute);
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+/* An arrow drawn from two hairlines — no icon set. */
+.footer__arrow {
+  position: relative;
+  display: block;
+  width: var(--s-4);
+  height: var(--s-6);
+  transition: transform var(--d-mid) var(--e-in-out);
+}
+
+.footer__arrow::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: var(--border-hair);
+  background: currentColor;
+  transform: translateX(-50%);
+}
+
+.footer__arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: var(--s-1);
+  width: var(--s-2);
+  height: var(--s-2);
+  border-left: var(--border-hair) solid currentColor;
+  border-top: var(--border-hair) solid currentColor;
+  transform: translate(-50%, 0) rotate(45deg);
+}
+
+/* Same two hairlines, turned a quarter to point at the field's action. */
+.footer__arrow--r { transform: rotate(90deg); }
+
+@media (hover: hover) {
+  .footer__top:hover { color: var(--fg); }
+  .footer__top:hover .footer__arrow { transform: translateY(calc(var(--s-2) * -1)); }
+}
+
+/* ---------- certification marks ---------- */
+
+.footer__label { margin-bottom: var(--s-5); }
+
+.footer__certs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--s-5);
+  row-gap: var(--s-3);
+}
+
+.footer__cert {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--fg-mute);
+}
+
+.footer__cert::before {
+  content: '';
+  flex: none;
+  width: 0.85em;
+  height: var(--border-hair);
+  background: currentColor;
+  opacity: 0.55;
+}
+
+/* ---------- band: guarantee / sections / stay in the loop ---------- */
+
+/* Three columns, three real occupants. The previous 5/4/3 split parked a
+   single "back to top" link in the last column and left a 370px hole in the
+   middle of the close. */
+.footer__band {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
+  column-gap: clamp(var(--s-6), 3.4vw, var(--s-9));
+  padding-block: clamp(var(--s-8), 7vh, var(--s-9));
+}
+
+/* The 365-day guarantee is the strongest reassurance the brand owns; at
+   --fs-small it read as a footnote. The figure now carries the section's one
+   accent at --fs-h2. */
+.footer__pledge-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.footer__pledge-n {
+  font-size: var(--fs-h2);
+  line-height: 0.9;
+  letter-spacing: var(--ls-h2);
+  font-weight: 700;
+}
+
+.footer__pledge-t {
+  font-size: var(--fs-h4);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h3);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* .footer__pledge-body is gone — see the note in footer.js. The terms of the
+   guarantee are stated once, in #proof. */
+
+/* ---------- sections nav ---------- */
+
+/* Two columns, not six stacked rows. With the guarantee's terms no longer
+   restated here (see footer.js) the pledge and the signup are both ~2 lines
+   tall, and a six-row link list left the band a single tall column flanked by
+   two short ones. Three columns of one height reads as a band. */
+.footer__links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--s-5);
+  row-gap: var(--s-3);
+}
+
+.footer__link {
+  display: inline-block;
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+.footer__link-t {
+  position: relative;
+  display: inline-block;
+  padding-bottom: var(--s-1);
+}
+
+.footer__link-t::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--border-hair);
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform var(--d-mid) var(--e-in-out);
+}
+
+@media (hover: hover) {
+  .footer__link:hover { color: var(--fg); }
+  .footer__link:hover .footer__link-t::after { transform: scaleX(1); transform-origin: 0 50%; }
+}
+
+.footer__link:focus-visible { color: var(--fg); }
+
+/* ---------- signup: a hairline field, and an honest label ---------- */
+
+.footer__field {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  border-bottom: var(--border-hair) solid var(--rule);
+  transition: border-color var(--d-mid) var(--e-soft);
+}
+
+.footer__field:focus-within { border-bottom-color: var(--fg); }
+
+.footer__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: 400;
+  letter-spacing: var(--ls-body);
+  color: var(--fg);
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.footer__input::placeholder { color: var(--fg-mute); opacity: 1; }
+
+.footer__submit {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--s-6);
+  height: var(--s-6);
+  color: var(--fg-mute);
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+@media (hover: hover) {
+  .footer__submit:hover { color: var(--fg); }
+}
+
+.footer__signup-note {
+  margin-top: var(--s-3);
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--fg-mute);
+  max-width: 34ch;
+}
+
+/* ---------- legal ---------- */
+
+.footer__legal {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  column-gap: clamp(var(--s-5), 3vw, var(--s-8));
+  align-items: end;
+  padding-top: clamp(var(--s-6), 4vh, var(--s-7));
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+/* FDA statement — legally required, so it is small but never faint.
+   --fg-mute on --ink measures ~6.9:1. */
+.footer__disclaimer {
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--fg-mute);
+  max-width: 74ch;
+  text-wrap: pretty;
+}
+
+.footer__fine {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-2);
+  text-align: right;
+}
+
+.footer__copy,
+.footer__note {
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--fg-mute);
+}
+
+/* ---------- 390px is a real design ---------- */
+
+@media (max-width: 860px) {
+  .footer {
+    padding-top: var(--seam);
+  }
+
+  .footer__close {
+    display: block;
+  }
+
+  .footer__marks { margin-top: clamp(var(--s-7), 9vw, var(--s-8)); }
+
+  .footer__rule-row { margin-top: clamp(var(--s-7), 9vw, var(--s-8)); }
+
+  .footer__band {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(var(--s-7), 9vw, var(--s-8));
+  }
+
+  .footer__signup-note { max-width: none; }
+
+  .footer__legal {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-5);
+  }
+
+  .footer__fine {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  /* At 390 the rule between brand and control has nothing left to say — the
+     two ends simply take the row. */
+  .footer__hair { display: none; }
+  .footer__rule-row { justify-content: space-between; }
+  .footer__certs { row-gap: var(--s-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer__seam,
+  .footer__hair { transform: none !important; }
+}

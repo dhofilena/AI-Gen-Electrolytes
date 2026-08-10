@@ -1,0 +1,358 @@
+/* ============================================================
+   BENEFITS — bone surface, type-led index of eight systems.
+   A sticky ledger counts 01–08 while the list resolves against
+   the reading line. Hairlines only: no cards, no boxes, no radius.
+
+   CONTRAST: claim bodies and the FDA disclaimer never drop below
+   --fg-mute (~6.9:1 on bone). --fg-faint is decorative-only per
+   tokens.css; the row on the reading line resolves UP to full ink,
+   it never resolves down out of legibility.
+   ============================================================ */
+
+.benefits {
+  /* Seam rhythm (tokens.css). The ledger below compensates this exact value,
+     so the two must be edited together — see .ben__ledger. */
+  padding-block: var(--seam);
+  overflow: clip;
+}
+
+.ben__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 1.6vw, 1.75rem);
+}
+
+/* ---------- LEDGER (sticky) ---------- */
+
+/* Given the full viewport and set top-and-bottom inside it. The old short
+   block sat at the top of a 1,980px column and left ~1,500px of bare cream
+   beneath it — 40% of the section empty on one side. A full-height sticky
+   pane with the statement at the head and the count at the foot keeps the
+   left column occupied edge to edge for the whole of its travel. */
+.ben__ledger {
+  grid-column: 1 / span 5;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: 100svh;
+  display: grid;
+  align-content: space-between;
+  /* Pulled up onto the section's own top padding so the pane is exactly the
+     viewport from the section's first pixel. Without this it starts one
+     --sec-y-lg lower and the odometer is sheared off the bottom edge until
+     you have scrolled past it. The padding puts it back, and clears the
+     fixed nav while it is down. */
+  margin-top: calc(var(--seam) * -1);
+  padding-block: calc(var(--seam) + clamp(1rem, 3vh, 2.25rem)) clamp(3rem, 7vh, 4.5rem);
+}
+
+.ben__eyebrow { margin-bottom: clamp(1.5rem, 3.5vh, 2.75rem); }
+
+/* Leading comes from the .t-h2 tier in base.css. See the note above the type
+   primitives: at --fs-h2 the page reads --lh-tight, and this headline steps up
+   to --fs-h1 (and therefore to --lh-display) only when it stacks, below. */
+.ben__title {
+  max-width: 18ch;
+}
+
+/* ---------- METER (odometer + progress rule) ----------
+   One node. Desktop: the foot of the sticky ledger. Stacked: a sticky
+   strip at the head of the list (see .ben__meterslot). */
+
+/* Sits at the foot of the sticky pane — the page number of the ledger. */
+.ben__meter { margin-top: clamp(2rem, 5vh, 3.5rem); }
+
+.ben__counter {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+}
+
+.ben__odo {
+  --odo-h: 1.06em;
+  display: block;
+  height: var(--odo-h);
+  overflow: hidden;
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: var(--ls-display);
+  color: var(--fg);
+}
+
+.ben__odo-track {
+  display: block;
+  transform: translateY(calc(var(--i, 0) * var(--odo-h) * -1));
+  transition: transform var(--d-slow) var(--e-out);
+  will-change: transform;
+}
+
+.ben__odo-track > span {
+  display: block;
+  height: var(--odo-h);
+  line-height: var(--odo-h);
+}
+
+.ben__total {
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+  letter-spacing: var(--ls-caps);
+}
+
+.ben__progress {
+  position: relative;
+  height: var(--border-hair);
+  margin-top: clamp(1.5rem, 3vh, 2.25rem);
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.ben__progress-bar {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* ---------- INDEX RAIL ----------
+   The ledger's progress drawn vertically, against the list it counts.
+   Ticks are placed by JS at each row's true centre, so this is a measured
+   index of the claims, not eight decorative marks. */
+
+.ben__rail {
+  grid-column: 6;
+  position: relative;
+  align-self: stretch;
+}
+
+.ben__railline,
+.ben__railfill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--border-hair);
+}
+
+.ben__railline { background: var(--rule); }
+
+.ben__railfill {
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.ben__railticks {
+  position: absolute;
+  inset: 0;
+}
+
+.ben__railtick {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  transform: translateY(-50%);
+}
+
+/* Was --fg-faint on the argument that index numerals are ornament. They are
+   not: they are the only thing telling you which of the eight rows you are on,
+   and at 2.03:1 that information was unreadable. --fg-mute. */
+.ben__railnum {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  line-height: 1;
+  color: var(--fg-mute);
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+.ben__railmark {
+  display: block;
+  width: var(--s-3);
+  height: var(--border-hair);
+  background: var(--rule);
+  transition:
+    background-color var(--d-mid) var(--e-soft),
+    width var(--d-mid) var(--e-out);
+}
+
+.ben__railtick.is-done .ben__railnum { color: var(--fg-mute); }
+.ben__railtick.is-done .ben__railmark { background: var(--accent); }
+
+.ben__railtick.is-current .ben__railnum { color: var(--fg); }
+
+.ben__railtick.is-current .ben__railmark {
+  width: var(--s-5);
+  background: var(--accent);
+}
+
+/* ---------- LIST ---------- */
+
+/* List + disclaimer share one grid row so the sticky ledger's travel
+   runs the full length of the claims it counts. */
+.ben__col { grid-column: 7 / -1; }
+
+/* Empty on desktop; the meter's sticky host once stacked. */
+.ben__meterslot { display: none; }
+
+.ben__list { border-bottom: var(--border-hair) solid var(--rule); }
+
+.ben__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  padding-block: clamp(1.75rem, 3.2vw, 2.9rem);
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+/* Accent segment that overlays the hairline of the row you are on. */
+.ben__mark {
+  position: absolute;
+  top: calc(var(--border-hair) * -1);
+  left: 0;
+  width: clamp(2rem, 4vw, 3.5rem);
+  height: var(--border-hair);
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--d-mid) var(--e-out);
+}
+
+.ben__row.is-current .ben__mark { transform: scaleX(1); }
+
+.ben__row-title {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h3);
+  font-weight: 700;
+  color: var(--fg-mute);
+  text-wrap: balance;
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+/* Structure/function claim text. --fg-mute is the floor, at rest and
+   everywhere else; the reading line lifts it to full ink. */
+.ben__row-body {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg-mute);
+  max-width: 48ch;
+  text-wrap: pretty;
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+.ben__row.is-current .ben__row-title,
+.ben__row.is-current .ben__row-body { color: var(--fg); }
+
+/* ---------- DISCLAIMER ----------
+   Small and quiet, but legible. It sits with the claims it qualifies.
+   Regulated text: --fg-mute, never the decorative tier. */
+
+.ben__disclaimer {
+  margin-top: clamp(1.5rem, 3.5vh, 2.5rem);
+  font-size: var(--fs-micro);
+  line-height: 1.55;
+  color: var(--fg-mute);
+  max-width: 68ch;
+}
+
+/* ============================================================
+   STACKED — the sticky ledger needs real width, but the LEDGER
+   DEVICE does not disappear. It relocates to the head of the list.
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .ben__grid { grid-template-columns: minmax(0, 1fr); }
+
+  .ben__ledger {
+    grid-column: 1;
+    position: static;
+    min-height: 0;
+    display: block;
+    margin-top: 0;
+    padding-block: 0;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .ben__rail { display: none; }
+
+  .ben__col { grid-column: 1; }
+
+  /* Stacked, the headline gets the full measure back. */
+  .ben__title {
+    font-size: var(--fs-h1);
+    line-height: var(--lh-display);
+    letter-spacing: var(--ls-h1);
+    max-width: 20ch;
+  }
+
+  /* The meter, re-cut as a horizontal ledger strip that rides the foot of
+     the viewport — the same position it holds on desktop. Bone-filled so
+     rows pass cleanly underneath, and a hairline head keeps it part of the
+     same ruled system as the list. It docks under the disclaimer at the
+     end, so it never covers the regulated text. */
+  .ben__meterslot {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    margin-top: clamp(2rem, 5vh, 3.5rem);
+    background: var(--bg);
+    border-top: var(--border-hair) solid var(--rule);
+  }
+
+  .ben__meterslot .ben__meter {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--s-5);
+    margin-top: 0;
+    padding-block: var(--s-3);
+    padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom));
+  }
+
+  .ben__meterslot .ben__counter { gap: var(--s-2); }
+
+  .ben__meterslot .ben__odo {
+    font-size: var(--fs-h2);
+    letter-spacing: var(--ls-h2);
+  }
+
+  .ben__meterslot .ben__total { font-size: var(--fs-micro); }
+
+  .ben__meterslot .ben__progress {
+    margin-top: 0;
+    align-self: center;
+  }
+}
+
+/* Tablet: the row becomes a proper index line — title beside body. */
+@media (min-width: 861px) and (max-width: 1100px) {
+  .ben__row {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    align-items: start;
+  }
+
+  .ben__row-title,
+  .ben__row-body { grid-row: 1; }
+}
+
+/* ---------- MOBILE (390px is a design, not a fallback) ---------- */
+
+@media (max-width: 860px) {
+  .benefits { padding-block: var(--seam); }
+
+  .ben__row {
+    gap: var(--s-2);
+    padding-block: var(--s-6);
+  }
+
+  .ben__row-body { max-width: none; }
+
+  .ben__mark { width: var(--s-6); }
+}

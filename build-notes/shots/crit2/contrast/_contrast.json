@@ -1,0 +1,80 @@
+[
+  {
+    "flavor": "lemonade",
+    "sel": ".flv__copy.is-active .flv__note",
+    "color": "oklab(0.937411 -0.0249843 0.109818)",
+    "opacity": 1,
+    "meanBackdrop": [
+      34,
+      34,
+      29
+    ],
+    "contrastMean": 13.37,
+    "contrastWorst": 10.67
+  },
+  {
+    "flavor": "lemonade",
+    "sel": ".flv__copy.is-active .flv__desc",
+    "color": "rgb(244, 241, 234)",
+    "opacity": 0.74,
+    "meanBackdrop": [
+      35,
+      34,
+      28
+    ],
+    "contrastMean": 8.31,
+    "contrastWorst": 7.75
+  },
+  {
+    "flavor": "tropical",
+    "sel": ".flv__copy.is-active .flv__note",
+    "color": "oklab(0.807763 0.0724401 0.0758121)",
+    "opacity": 1,
+    "meanBackdrop": [
+      27,
+      20,
+      21
+    ],
+    "contrastMean": 9.66,
+    "contrastWorst": 7.99
+  },
+  {
+    "flavor": "tropical",
+    "sel": ".flv__copy.is-active .flv__desc",
+    "color": "rgb(244, 241, 234)",
+    "opacity": 0.74,
+    "meanBackdrop": [
+      28,
+      22,
+      23
+    ],
+    "contrastMean": 9.04,
+    "contrastWorst": 8.58
+  },
+  {
+    "flavor": "berry",
+    "sel": ".flv__copy.is-active .flv__note",
+    "color": "oklab(0.719715 0.072542 0.00902781)",
+    "opacity": 1,
+    "meanBackdrop": [
+      23,
+      13,
+      21
+    ],
+    "contrastMean": 7.42,
+    "contrastWorst": 6.78
+  },
+  {
+    "flavor": "berry",
+    "sel": ".flv__copy.is-active .flv__desc",
+    "color": "rgb(244, 241, 234)",
+    "opacity": 0.74,
+    "meanBackdrop": [
+      24,
+      13,
+      22
+    ],
+    "contrastMean": 9.4,
+    "contrastWorst": 8.98
+  }
+]

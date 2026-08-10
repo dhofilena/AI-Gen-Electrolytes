@@ -1,0 +1,191 @@
+{
+  "_doc": "Asset manifest. `node tools/media.mjs submit` queues anything without a jobId; `poll` downloads finished jobs. Safe to re-run — it never re-submits a job it already has an id for.",
+  "assets": [
+    {
+      "name": "hero-dissolve",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "jobId": "6fb6827e-3418-40ec-8d38-fbf6c5f42db5",
+      "done": true,
+      "prompt": "done",
+      "optimized": true
+    },
+    {
+      "name": "flavor-lemonade",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "generate_audio": false
+      },
+      "prompt": "Extreme macro slow motion: a plume of luminous pale yellow crystalline powder, colour of soft lemon sherbet, billows and dissolves into ultra-clear still water. Backlit by warm white light, tiny bubbles spiralling upward, deep black background, single hard key light raking from behind, volumetric glow, caustic refraction. Luxury beverage commercial cinematography, anamorphic lens, shallow depth of field, hyper detailed, elegant slow drift. No text, no logos, no packaging, no people.",
+      "jobId": "0ace9686-9a53-4ba0-b71e-eb50aa987473",
+      "done": true,
+      "file": "/media/flavor-lemonade.mp4",
+      "optimized": true
+    },
+    {
+      "name": "flavor-tropical",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "generate_audio": false
+      },
+      "prompt": "Extreme macro slow motion: a plume of soft coral peach crystalline powder, warm apricot tone, billows and dissolves into ultra-clear still water. Backlit by warm golden light, tiny bubbles spiralling upward, deep black background, single hard key light raking from behind, volumetric glow, caustic refraction. Luxury beverage commercial cinematography, anamorphic lens, shallow depth of field, hyper detailed, elegant slow drift. No text, no logos, no packaging, no people.",
+      "jobId": "be7713fd-eee5-4608-88f9-d27eccaf64d7",
+      "done": true,
+      "file": "/media/flavor-tropical.mp4",
+      "optimized": true
+    },
+    {
+      "name": "flavor-berry",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "9:16",
+        "resolution": "720p",
+        "generate_audio": false,
+        "mode": "fast"
+      },
+      "prompt": "Extreme macro slow motion: a plume of deep magenta crimson crystalline powder, rich dark berry tone, billows and dissolves into ultra-clear still water. Shot against a pure solid black background with zero background detail, lit only by a hard rim light from behind so the powder glows and the surrounding field stays pure black. Tiny bubbles spiral upward, volumetric glow, caustic refraction. Luxury beverage commercial cinematography, anamorphic lens, shallow depth of field, hyper detailed, elegant slow drift. Pure black negative space, no grey background, no visible container, no tank edges, no text, no logos, no people.",
+      "jobId": "2c3eeef2-e944-4bdb-a53c-442392407620",
+      "done": true,
+      "file": "/media/flavor-berry.mp4",
+      "optimized": true
+    },
+    {
+      "name": "cellular",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "generate_audio": false
+      },
+      "prompt": "Abstract scientific macro visualisation: glowing amber mineral ions drift through dark fluid and are drawn into a translucent spherical membrane which slowly swells and brightens as it fills with light. Bioluminescent gold and soft magenta accents, deep black field, volumetric god rays, delicate particle detail, extremely slow graceful motion. Premium pharmaceutical brand film, macro lens, shallow depth of field. No text, no logos, no people, not a cartoon, photoreal fluid dynamics.",
+      "jobId": "0329fdbd-f8a8-4299-8cbd-3b3f17d920dc",
+      "done": true,
+      "file": "/media/cellular.mp4",
+      "optimized": true
+    },
+    {
+      "name": "ritual-pour",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "16:9",
+        "resolution": "720p",
+        "generate_audio": false,
+        "mode": "fast"
+      },
+      "prompt": "Cinematic slow motion close up: a tall clear glass tumbler on a pale marble kitchen counter being filled with a bright translucent citrus-amber electrolyte drink, lively effervescent bubbles rising through the liquid, fresh and clean and hydrating. Bright airy morning kitchen, white and cream tones, soft daylight through a window, a few fresh citrus slices nearby. Health and wellness brand film, crisp and refreshing, 85mm lens, shallow depth of field, natural light. Not alcohol, not whisky, not a cocktail, no ice cubes, no dark bar, no amber spirits, no text, no logos.",
+      "jobId": "95cb07a6-fb79-4b4a-a61d-f84f5efc0403",
+      "done": true,
+      "file": "/media/ritual-pour.mp4",
+      "optimized": true
+    },
+    {
+      "name": "athlete-breath",
+      "kind": "video",
+      "model": "seedance_2_0",
+      "params": {
+        "duration": 5,
+        "aspect_ratio": "16:9",
+        "resolution": "720p",
+        "generate_audio": false,
+        "mode": "fast"
+      },
+      "prompt": "Cinematic slow motion portrait: an athletic woman in her mid thirties with sun-kissed skin and short blonde hair, wearing simple dark navy athletic wear, catching her breath after training and taking a slow drink from a frosted bottle. Warm low morning sunlight rakes across her face, skin glistening, calm and strong expression, she lowers the bottle and exhales. Clean bright minimal studio, soft cream background, premium wellness commercial, 85mm lens, shallow depth of field. No text, no logos, no branding.",
+      "jobId": "db0362d0-0889-47dc-8d4e-1c7d511b26d7",
+      "done": true,
+      "file": "/media/athlete-breath.mp4",
+      "optimized": true
+    },
+    {
+      "name": "still-hero-glass",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "prompt": "Premium product photograph: a heavy clear glass tumbler of warm amber electrolyte drink on a pale travertine surface, backlit by hard warm sunlight casting a long crisp shadow and bright caustic light patterns through the liquid. Condensation on the glass, a few citrus-toned bubbles. Deep shadow, cream and warm neutral palette, editorial wellness still life, 100mm macro, shallow depth of field, no text, no logos, no packaging.",
+      "jobId": "43be1712-3e05-4cfd-9977-b13de930ad38",
+      "done": true,
+      "file": "/media/still-hero-glass.png"
+    },
+    {
+      "name": "still-texture-salt",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "16:9",
+        "resolution": "2k"
+      },
+      "prompt": "Extreme macro photograph of coarse mineral salt and fine crystalline powder scattered on matte black stone, raked by a single hard warm light from the left so every crystal edge catches a highlight. Deep black background, dramatic chiaroscuro, hyper detailed, editorial science photography, no text, no logos.",
+      "jobId": "7a8c1b47-c923-4fb1-9e56-f142e0e7bdad",
+      "done": true,
+      "file": "/media/still-texture-salt.png"
+    },
+    {
+      "name": "still-athlete-calm",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "3:4",
+        "resolution": "2k"
+      },
+      "prompt": "Editorial wellness portrait: an athletic woman in her mid thirties with sun-kissed skin, freckles and short blonde hair, wearing simple dark navy athletic wear, standing calm and relaxed in warm low morning sunlight against a clean cream background. Soft skin texture, natural light, quiet confident expression, looking slightly off camera. Premium supplement brand campaign photography, 85mm lens, shallow depth of field, no text, no logos, no branding, no product.",
+      "jobId": "0bfca56d-0cdd-40ed-906b-9024c345045b",
+      "done": true,
+      "file": "/media/still-athlete-calm.png"
+    },
+    {
+      "name": "product-tub",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "prompt": "Premium product photograph on a deep near-black surface: a matte cream-white cylindrical supplement tub with a smooth brushed metal lid, completely unlabelled with no text and no logo, standing beside a small stainless scoop heaped with fine pale-amber electrolyte powder, a little of the powder spilled in a soft arc on the surface. Single hard warm key light from the upper left raking across the tub, long crisp shadow, deep falloff to black. Editorial supplement campaign still life, 100mm macro, shallow depth of field, hyper detailed, no text, no logo, no label, no branding, no packaging graphics.",
+      "jobId": "ff2959de-8d72-4781-99cc-a51e1fdf7d0e",
+      "done": true,
+      "file": "/media/product-tub.png"
+    },
+    {
+      "name": "product-scoop",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "1:1",
+        "resolution": "2k"
+      },
+      "prompt": "Extreme macro photograph: a stainless steel measuring scoop heaped with fine pale-amber crystalline electrolyte powder, individual grains catching a hard warm side light, a few grains falling. Deep matte black background, dramatic chiaroscuro, powder texture razor sharp. Editorial supplement photography, 100mm macro, no text, no logo, no packaging, no hands.",
+      "jobId": "8462468f-0803-4572-9d9b-5e10c0c56dba",
+      "done": true,
+      "file": "/media/product-scoop.png"
+    },
+    {
+      "name": "product-glass-pour",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "3:4",
+        "resolution": "2k"
+      },
+      "prompt": "Premium product photograph: a tall clear glass of bright translucent citrus-amber electrolyte drink on a pale travertine surface, fine effervescent bubbles rising, condensation on the glass, an unlabelled matte cream supplement tub softly out of focus behind it. Hard warm morning sunlight from the left casting a long crisp shadow and bright caustic light through the liquid. Cream and warm neutral palette, editorial wellness still life, 85mm, shallow depth of field, no text, no logo, no label, no branding.",
+      "jobId": "830985c3-9eb9-4f07-9603-36f8c9ade93d",
+      "done": true,
+      "file": "/media/product-glass-pour.png"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Media inspector</title>
+  <style>
+    body { margin:0; background:#111; color:#eee; font:12px -apple-system,sans-serif; padding:12px; }
+    h2 { font-size:13px; margin:14px 0 6px; font-weight:600; color:#9ad; }
+    .sheet { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+    figure { margin:0; position:relative; }
+    canvas { width:100%; display:block; background:#000; }
+    figcaption { position:absolute; left:4px; top:4px; background:rgba(0,0,0,.7); padding:1px 5px; font-size:10px; }
+    .meta { color:#888; margin-bottom:8px; }
+  </style>
+</head>
+<body>
+  <div class="meta" id="meta">loading…</div>
+  <div id="out"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const srcs = (params.get('v') || '').split(',').filter(Boolean);
+const FRAMES = parseInt(params.get('n') || '8', 10);
+
+async function sheet(src) {
+  const v = document.createElement('video');
+  v.src = src; v.muted = true; v.crossOrigin = 'anonymous';
+  await new Promise((res, rej) => {
+    v.onloadedmetadata = res;
+    v.onerror = () => rej(new Error('load fail ' + src));
+  });
+
+  const h2 = document.createElement('h2');
+  h2.textContent = `${src}  —  ${v.videoWidth}×${v.videoHeight}  ${v.duration.toFixed(2)}s`;
+  document.getElementById('out').appendChild(h2);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'sheet';
+  document.getElementById('out').appendChild(wrap);
+
+  for (let i = 0; i < FRAMES; i++) {
+    const t = (v.duration * i) / (FRAMES - 1 || 1);
+    await new Promise((res) => {
+      v.onseeked = res;
+      v.currentTime = Math.min(t, v.duration - 0.02);
+    });
+    const c = document.createElement('canvas');
+    c.width = 480; c.height = Math.round(480 * v.videoHeight / v.videoWidth);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const fig = document.createElement('figure');
+    const cap = document.createElement('figcaption');
+    cap.textContent = t.toFixed(2) + 's';
+    fig.appendChild(c); fig.appendChild(cap);
+    wrap.appendChild(fig);
+  }
+}
+
+(async () => {
+  for (const s of srcs) {
+    try { await sheet(s); }
+    catch (e) {
+      const p = document.createElement('div');
+      p.textContent = 'ERROR ' + e.message; p.style.color = '#f66';
+      document.getElementById('out').appendChild(p);
+    }
+  }
+  document.getElementById('meta').textContent = 'done: ' + srcs.length + ' clip(s)';
+})();
+</script>
+</body>
+</html>

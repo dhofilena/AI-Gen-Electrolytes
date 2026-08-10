@@ -1,0 +1,8 @@
+[build]
+  publish = "dist"
+  # Prefer local `npm run build` then `netlify deploy --prod --dir=dist --no-build`
+  # because public/media/_raw can contain OneDrive placeholders that break vite copy.
+  command = "echo Using prebuilt dist"
+
+[build.environment]
+  NODE_VERSION = "20"

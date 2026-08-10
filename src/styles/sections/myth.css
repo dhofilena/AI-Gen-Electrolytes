@@ -1,0 +1,381 @@
+/* ============================================================
+   MYTH — the argumentative turn.
+
+   Mobile-first: three stacked beats.
+   At >=861px with motion allowed, the beats stack in Z instead
+   of Y and the section pins so the argument is scrubbed.
+
+   One accent only: --dreamsicle, on the percent glyph and the
+   hairline that opens the correction.
+   ============================================================ */
+
+.section.myth {
+  padding-block: 0;
+
+  /* This section owns the semantic accent for its own subtree. */
+  --accent: var(--dreamsicle);
+  --accent-rgb: var(--dreamsicle-rgb);
+
+  /* --fs-mega tops out at 17rem, which on a 1440px canvas is a large
+     word, not a monument — the payload measured 5.3% of the frame
+     against 39.7% for the headline that sets it up. The numeral is
+     therefore sized off the CONTENT ROW (so it can never outgrow the
+     grid at 1920+) and capped against viewport height (so the lockup
+     always clears the pin). Phones already had this right at 40vw. */
+  --myth-row: calc(min(100vw, var(--maxw)) - 2 * var(--gutter));
+  --myth-mega: var(--fs-mega);
+}
+
+@media (max-width: 860px) {
+  .section.myth { --myth-mega: max(var(--fs-mega), 40vw); }
+}
+
+@media (min-width: 861px) {
+  .section.myth {
+    --myth-mega: max(var(--fs-mega), min(calc(var(--myth-row) * 0.55), 78svh));
+  }
+}
+
+.myth__pin {
+  position: relative;
+  width: 100%;
+}
+
+.myth__beat { position: relative; }
+
+.myth__in {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* Descender rescue is owned by base.css (--mask-rescue, paired with the
+   yPercent offset in reveal.js). The shared 0.18em default is already
+   tuned for --lh-display, which is what this section's headline uses,
+   so nothing is overridden here. */
+
+/* ---------------------------------------------------------------
+   01 — THE CLAIM
+   --------------------------------------------------------------- */
+
+.myth__bg {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  max-height: 80vh;
+  max-height: 80svh;
+  /* Chiaroscuro fallback: holds the frame if the salt macro has not
+     rendered yet, and sits under it once it has. */
+  background: radial-gradient(
+    118% 82% at 24% 16%,
+    var(--ink-veil) 0%,
+    var(--ink-soft) 44%,
+    var(--ink) 100%
+  );
+}
+
+.myth__bg-inner {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.myth__bg-img { object-position: center; }
+.myth__bg-img.is-missing { display: none; }
+
+/* Two scrims, stacked. The salt is lit from the lower left, which is
+   exactly where the display type sits — so the ink is heaviest there
+   and the crystals stay readable on the right. */
+.myth__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--ink-rgb), 0.40) 0%,
+      rgba(var(--ink-rgb), 0.14) 30%,
+      rgba(var(--ink-rgb), 0.82) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(var(--ink-rgb), 0.62) 0%,
+      rgba(var(--ink-rgb), 0.14) 56%,
+      rgba(var(--ink-rgb), 0) 100%
+    );
+}
+
+/* Driven up by the scrub. It is a RADIAL, not a flat fill: at full
+   strength the centre still passes ~22% of the salt, so the second half
+   of the pin lands on lit material instead of a black void. The edges
+   go to solid ink, which keeps the frame closed. */
+.myth__blackout {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    104% 84% at 58% 42%,
+    rgba(var(--ink-rgb), 0.78) 0%,
+    rgba(var(--ink-rgb), 0.93) 46%,
+    var(--ink) 82%
+  );
+  opacity: 0;
+}
+
+/* The warmth. One accent, used as light rather than as ink: a low pool
+   under where the type sits, plus a vignette that gives the flat ink
+   some depth. Driven 0 -> 0.62 as the blackout lands, then bloomed to 1
+   in the final movement as the ground comes back. */
+.myth__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  background:
+    radial-gradient(
+      76% 64% at 26% 64%,
+      rgba(var(--accent-rgb), 0.15) 0%,
+      rgba(var(--accent-rgb), 0.05) 44%,
+      rgba(var(--accent-rgb), 0) 72%
+    ),
+    radial-gradient(
+      124% 104% at 50% 46%,
+      rgba(var(--ink-rgb), 0) 40%,
+      rgba(var(--ink-rgb), 0.62) 100%
+    );
+}
+
+.myth__beat--claim .myth__in { padding-block: var(--s-8) 0; }
+
+/* Eyebrow + the category's own claim. On desktop these split to the
+   two top corners; the headline then owns the whole lower frame. */
+.myth__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  margin-bottom: var(--s-7);
+}
+
+.myth__head { max-width: 13ch; }
+
+.myth__claim { max-width: 40ch; }
+
+/* ---------------------------------------------------------------
+   02 — THE TURN
+   --------------------------------------------------------------- */
+
+.myth__beat--pivot { padding-block: var(--sec-y); }
+
+.myth__pivot { max-width: 13ch; }
+
+/* ---------------------------------------------------------------
+   02 — THE PAYLOAD
+   --------------------------------------------------------------- */
+
+/* Seam rhythm (tokens.css): this is the myth -> science boundary. Same
+   surface, and science answers the question myth just asked, so the two are
+   deliberately close — the argument continues, it does not restart. */
+.myth__beat--stat { padding-bottom: var(--seam-tight); }
+
+.myth__statwrap { position: relative; }
+
+.myth__sweep {
+  display: block;
+  width: 100%;
+  height: var(--border-hair);
+  background: var(--accent);
+  transform-origin: left center;
+  margin-bottom: var(--s-5);
+}
+
+/* THE HEDGE. It is not a section label — it is the first word of the
+   sentence the numeral finishes, so it is set INSIDE the lockup, on the
+   numeral's own cap line, at the label's size. Sighted readers get
+   exactly the claim the screen-reader string carries: "About 98% of
+   Americans do not get enough potassium". Set as a standalone 14px row
+   above the numeral it read as a nav item called "About", and the frame
+   composed into an unhedged claim. */
+.myth__kicker {
+  flex: none;
+  font-size: var(--fs-h3);
+  line-height: 1;
+  letter-spacing: var(--ls-body);
+  font-weight: 400;
+  /* --fg, not --fg-mute: this IS the qualifier on a regulated claim.
+     It has to read as plainly as the number it hedges. */
+  color: var(--fg);
+  /* drop to the numeral cap line (~0.07em of the mega size), less the
+     kicker's own half-leading */
+  margin-top: calc(var(--myth-mega) * 0.07 - var(--fs-h3) * 0.15);
+  margin-right: clamp(var(--s-3), 0.9vw, var(--s-5));
+}
+
+.myth__kicker:empty { display: none; }
+
+.myth__stat {
+  font-size: var(--myth-mega);
+  line-height: var(--lh-mega);
+  letter-spacing: var(--ls-mega);
+  font-weight: 700;
+}
+
+.myth__stat-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.myth__stat-in {
+  display: flex;
+  align-items: flex-start;
+  will-change: transform;
+}
+
+.myth__stat-n { display: block; }
+
+.myth__stat-u {
+  display: block;
+  font-size: 0.4em;
+  line-height: 1;
+  margin-top: 0.09em;
+  margin-left: 0.04em;
+  color: var(--accent);
+}
+
+.myth__statlabel {
+  font-weight: 400;
+  max-width: 22ch;
+  margin-top: var(--s-6);
+}
+
+/* Progress hairline is a pinned-sequence affordance only. */
+.myth__rail { display: none; }
+
+/* ---------------------------------------------------------------
+   DESKTOP — beats stack in Z, the section pins
+   --------------------------------------------------------------- */
+
+@media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+  .myth__pin {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .myth__beat {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+  }
+
+  .myth__beat--claim { z-index: 1; }
+  .myth__beat--pivot { z-index: 2; }
+  .myth__beat--stat { z-index: 3; }
+
+  .myth__bg {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    max-height: none;
+  }
+
+  .myth__in {
+    height: 100%;
+    display: grid;
+    align-content: center;
+    padding-block: var(--sec-y);
+  }
+
+  .myth__beat--claim .myth__in {
+    grid-template-rows: auto 1fr;
+    align-content: stretch;
+    padding-block: var(--sec-y);
+  }
+
+  .myth__meta {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--s-8);
+    margin-bottom: 0;
+  }
+
+  .myth__claim {
+    max-width: 34ch;
+    text-align: right;
+  }
+
+  .myth__head { align-self: end; }
+
+  /* Same descender logic as .line-mask, but this mask wraps the whole
+     block rather than one line, so it carries its own paired rescue.
+     The yPercent offset in myth.js must clear block height + this. */
+  .myth__pivot-mask {
+    overflow: hidden;
+    padding-bottom: 0.18em;
+    margin-bottom: -0.18em;
+  }
+
+  .myth__pivot { will-change: transform; }
+
+  /* ---- the payload owns the whole frame ----
+     The numeral used to sit in a 427px column pinned to the left 25%,
+     with 1078px of dead black beside it — a payoff 7.5x smaller than its
+     own setup. Now the lockup spans ~10 of 12 columns and the label is
+     composed against it, hung on the numeral's baseline in the last two.
+     Padding drops to --s-8 so the taller numeral still clears the pin. */
+  .myth__beat--stat .myth__in { padding-block: var(--s-8); }
+
+  /* The label is hung on the numeral's own measure and pushed to its
+     right edge, so the caption closes the lockup under the percent sign
+     instead of being squeezed into whatever column is left over. Rule
+     top-left, monument across, caption bottom-right: the frame is
+     composed corner to corner rather than stacked in one quadrant. */
+  .myth__lockup {
+    display: grid;
+    grid-template-columns: minmax(0, max-content);
+    justify-content: start;
+  }
+
+  .myth__statlabel {
+    justify-self: end;
+    text-align: right;
+    max-width: none;
+    margin-top: clamp(var(--s-4), 2vh, var(--s-6));
+  }
+
+  .myth__rail {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--s-7);
+    z-index: 4;
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .myth__rail-track {
+    display: block;
+    height: var(--border-hair);
+    background: var(--rule);
+  }
+
+  .myth__rail-fill {
+    display: block;
+    height: 100%;
+    background: var(--fg-faint);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+}
+
+/* Attribution for the 98% stat. --on-dark-mute, NOT the faint tier: this is a
+   source line on the page's largest claim, and --fg-faint measures ~2.8:1.
+   Sits under the label rather than the numeral so it stays out of the
+   400px lockup's optical field. */
+.myth__statsource {
+  margin-top: var(--s-4);
+  max-width: 46ch;
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--on-dark-mute);
+}

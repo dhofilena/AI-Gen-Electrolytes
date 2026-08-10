@@ -1,0 +1,524 @@
+/* ============================================================
+   COMPARE — a technical specification table.
+   Light surface. Hairlines only. The row rule doubles as the axis
+   each bar grows along, so the chart IS the table's structure.
+
+   Two disciplines govern this file.
+
+   SCALE. Every bar is a fraction of --cmp-plot, ONE track measured
+   in JS from the narrowest data cell (see compare.js → measurePlot).
+   Nothing here may re-derive a bar length from its own cell — the us
+   column is wider on purpose, and letting that reach the chart is
+   what made a losing 5 outdraw a winning 6.
+
+   EMPHASIS. The us column gets exactly ONE accent device: the rule
+   capping its head. No wash, no verticals, no tinted cells. Its other
+   weight is typographic — a wider column, bold numerals, a bold
+   header — which costs the page no colour.
+
+   Specificity discipline: the table's own cells are addressed as
+   `.cmp__table tbody td` (0,1,2), so every override below is
+   written at (0,2,2) — `.cmp__table tbody td.cmp__cell`. No
+   !important anywhere.
+   ============================================================ */
+
+.compare {
+  /* Bar geometry derived from the hairline token, never a loose px. */
+  --cmp-bar: calc(var(--border-hair) * 3);
+  --cmp-rowpad-t: var(--s-7);
+  --cmp-rowpad-b: var(--s-5);
+  --cmp-gap: var(--s-5);
+
+  /* The shared chart track. JS overwrites --cmp-plot with a measured
+     pixel value; this is only the pre-measurement fallback so the
+     section is never blank. --cmp-plot-scale keeps a line's leader
+     short of its cell edge, so a winning bar stays a bar instead of
+     becoming a full-width rule stamped down the column. */
+  --cmp-plot: 7rem;
+  --cmp-plot-scale: 0.8;
+}
+
+.cmp__wrap {
+  max-width: 1480px;
+}
+
+/* ---------- head ---------- */
+
+.cmp__head {
+  margin-bottom: clamp(3.5rem, 7vw, 7rem);
+}
+
+.cmp__title {
+  margin-top: var(--s-5);
+  max-width: 16ch;
+}
+
+.cmp__lead {
+  margin-top: var(--s-6);
+  max-width: 58ch;
+}
+
+/* ---------- entry pattern ----------
+   Nine of thirteen sections open eyebrow-then-headline-then-lead stacked in
+   a left column, which turns a house voice into a template. On arrival this
+   section was the page's one remaining full-viewport frame of "big headline
+   top-left, nothing at all on the right" that was not deliberate.
+
+   The statement takes the left column at full height; the eyebrow and the
+   lead cluster opposite it as the table's metadata, set to the headline's
+   baseline. Deliberately NOT #formula's arrangement (eyebrow full-width above
+   a left title with body right) — the point is a different silhouette, not a
+   second copy of one. Desktop only; the stacked layout below 860px is the
+   protected mobile design and is untouched. */
+@media (min-width: 861px) {
+  .cmp__head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(var(--s-7), 6vw, var(--s-9));
+    align-items: end;
+
+    /* SEAM COMPENSATION — do not remove without re-running check-seams.
+       Every other section opens on an eyebrow or body text, whose ink box sits
+       inside its line box. This one opens on display type at --lh-display: the
+       line box (0.88em) is shorter than the font's content area, so the
+       headline's ink box starts ~0.32em ABOVE the content edge. The section
+       paid a full --seam (99px at 1440) and the ritual->compare boundary still
+       measured 171px against the page's ~200px default, because 28px of that
+       padding was being eaten by negative half-leading rather than by design.
+       Derived from the type token so it tracks --fs-h1 across the whole range
+       (28.6px at 1440, 23.4px at 1180, 17.1px at 861) instead of over-paying at
+       one width. Mobile stacks eyebrow-first and already measures 93 of 93. */
+    padding-top: calc(var(--fs-h1) * 0.32);
+  }
+
+  .cmp__eyebrow { grid-column: 2; grid-row: 1; }
+
+  .cmp__title {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin-top: 0;
+    align-self: start;
+  }
+
+  .cmp__lead {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: var(--s-5);
+    max-width: 42ch;
+  }
+}
+
+/* ---------- table shell ---------- */
+
+.cmp__tablewrap {
+  position: relative;
+}
+
+.cmp__table {
+  position: relative;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.cmp__caption {
+  caption-side: top;
+  text-align: left;
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  padding-bottom: var(--s-5);
+}
+
+.cmp__c-metric { width: 21%; }
+.cmp__c-us { width: 17%; }
+
+/* ---------- header row ---------- */
+
+.cmp__table thead th {
+  text-align: left;
+  vertical-align: bottom;
+  font-weight: 400;
+  font-size: var(--fs-small);
+  line-height: 1.25;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  padding: 0 var(--cmp-gap) var(--s-4) 0;
+  border-bottom: var(--border-hair) solid var(--fg-faint);
+}
+
+.cmp__table thead th.cmp__corner {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+/* The us head: bold and inset, with clearance under its rule. */
+.cmp__table thead th.cmp__brand--us {
+  position: relative;
+  font-weight: 700;
+  color: var(--fg);
+  padding-inline: var(--s-4);
+  padding-top: var(--s-6);
+}
+
+/* ---------- the one accent device ----------
+   A single rule capping the us column, inset to the column's CONTENT
+   box so it starts on the same axis as the figures and bars below it.
+   Drawn across on entry; nothing else in the column is tinted. */
+
+.cmp__rule {
+  position: absolute;
+  top: 0;
+  left: var(--s-4);
+  right: var(--s-4);
+  height: calc(var(--border-hair) * 2);
+  background: var(--accent);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.cmp__brand-name {
+  display: block;
+  text-wrap: balance;
+}
+
+/* ---------- body cells ---------- */
+
+.cmp__table tbody th,
+.cmp__table tbody td {
+  position: relative;
+  text-align: left;
+  vertical-align: baseline;
+  padding: var(--cmp-rowpad-t) var(--cmp-gap) var(--cmp-rowpad-b) 0;
+  border-bottom: var(--border-hair) solid var(--rule);
+}
+
+.cmp__table tbody th.cmp__metric {
+  padding-right: var(--s-7);
+  font-weight: 400;
+}
+
+.cmp__metric-name {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-body);
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+.cmp__metric-dir {
+  display: block;
+  margin-top: var(--s-2);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+.cmp__table tbody td.cmp__cell {
+  --pad-l: 0px;
+  --pad-r: var(--cmp-gap);
+  --barc: rgba(var(--ink-rgb), 0.17);
+  padding-left: var(--pad-l);
+  padding-right: var(--pad-r);
+}
+
+.cmp__table tbody td.cmp__cell--lead { --barc: rgba(var(--ink-rgb), 0.62); }
+
+.cmp__table tbody td.cmp__cell--us {
+  --barc: rgba(var(--accent-rgb), 0.5);
+  --pad-l: var(--s-4);
+  --pad-r: var(--s-4);
+}
+
+.cmp__table tbody td.cmp__cell--us.cmp__cell--lead { --barc: rgba(var(--accent-rgb), 1); }
+
+/* ---------- figures ----------
+   The numeral sits in a slot as wide as the widest figure on its line
+   (--digits, set per row from the data), right-aligned inside it. So
+   1000 and 55 end on one axis and their units start on another, and
+   magnitudes can be read typographically as well as from the bar.
+   Tabular figures (.num) make the slot exact. */
+
+.cmp__figure {
+  display: flex;
+  align-items: baseline;
+  gap: 0.22em;
+  white-space: nowrap;
+}
+
+.cmp__val {
+  min-width: calc(var(--digits, 1) * 1ch);
+  text-align: right;
+  font-size: var(--fs-h4);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+  color: var(--fg);
+}
+
+.cmp__cell--us .cmp__val { font-weight: 700; }
+
+.cmp__unit {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-mute);
+}
+
+/* ---------- bars ----------
+   The cell's bottom border is the axis; the fill sits on it, so the
+   row rule and the chart are the same line. The track is --cmp-plot
+   — the SAME width in every column, wide or narrow — so length is
+   comparable straight across a line. Zero draws nothing, which is
+   the correct reading of zero. */
+
+.cmp__bar {
+  position: absolute;
+  left: var(--pad-l);
+  bottom: 0;
+  width: var(--cmp-plot);
+  height: var(--cmp-bar);
+  pointer-events: none;
+}
+
+.cmp__fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  width: calc(var(--r, 0) * var(--cmp-plot));
+  background: var(--barc);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* Lower-is-better: the bar keeps its true length — it never lies about
+   the number — but it runs right to left from the shared track's far
+   end, and is ticked rather than solid, so a long sodium bar reads as
+   load, never as a lead. */
+.cmp__row--low .cmp__fill {
+  left: auto;
+  right: 0;
+  transform-origin: right center;
+  background: repeating-linear-gradient(90deg, var(--barc) 0 2px, transparent 2px 5px);
+}
+
+/* ---------- boolean line ---------- */
+
+.cmp__mark {
+  display: flex;
+  align-items: center;
+  min-height: 1em;
+}
+
+.cmp__check {
+  color: var(--fg);
+  overflow: visible;
+}
+
+.cmp__dash {
+  display: block;
+  width: 1.125rem;
+  height: var(--border-hair);
+  background: var(--fg-faint);
+  transform-origin: left center;
+}
+
+/* ---------- foot ---------- */
+
+.cmp__foot {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--s-6) clamp(2rem, 5vw, 5rem);
+  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.cmp__legend {
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+}
+
+.cmp__legend-item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--fg-mute);
+}
+
+.cmp__key {
+  display: block;
+  height: var(--cmp-bar);
+}
+
+.cmp__key--solid { background: rgba(var(--ink-rgb), 0.62); }
+.cmp__key--tick {
+  background: repeating-linear-gradient(90deg, rgba(var(--ink-rgb), 0.62) 0 2px, transparent 2px 5px);
+}
+
+.cmp__note { max-width: 64ch; }
+
+/* ============================================================
+   COMPACT DESKTOP — 861–1180px. Table survives; type tightens.
+   ============================================================ */
+
+@media (min-width: 861px) and (max-width: 1180px) {
+  .compare {
+    --cmp-rowpad-t: var(--s-6);
+    --cmp-gap: var(--s-4);
+  }
+  .cmp__val { font-size: var(--fs-lead); }
+  .cmp__table tbody th.cmp__metric { padding-right: var(--s-6); }
+  .cmp__c-metric { width: 19%; }
+  .cmp__c-us { width: 18%; }
+}
+
+/* ============================================================
+   MOBILE — the table becomes one card per metric: us as a block,
+   then the field as tight labelled lines. Same bar grammar, same
+   shared track, same numbers, no horizontal scroll, nothing cut
+   off. The explicit ARIA roles in the markup keep it a table for
+   screen readers even though every display value here is
+   overridden.
+   ============================================================ */
+
+@media (max-width: 860px) {
+  .cmp__table,
+  .cmp__table thead,
+  .cmp__table tbody,
+  .cmp__table tr,
+  .cmp__table th,
+  .cmp__table td {
+    display: block;
+    width: auto;
+  }
+
+  .cmp__table colgroup { display: none; }
+
+  .cmp__table caption.cmp__caption {
+    display: block;
+    padding-bottom: var(--s-4);
+  }
+
+  /* Column headers leave the layout but stay in the a11y tree. */
+  .cmp__table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cmp__table tbody {
+    border-top: var(--border-hair) solid var(--fg-faint);
+  }
+
+  .cmp__table tbody tr.cmp__row {
+    padding: var(--s-6) 0;
+  }
+
+  .cmp__table tbody th,
+  .cmp__table tbody td {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .cmp__table tbody th.cmp__metric {
+    padding: 0 0 var(--s-5);
+  }
+
+  .cmp__metric-name {
+    font-size: var(--fs-h3);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-h3);
+  }
+
+  .cmp__metric-dir { margin-top: var(--s-3); }
+
+  /* --- the field: one tight labelled line per brand --- */
+  .cmp__table tbody td.cmp__cell {
+    --pad-l: 0px;
+    --pad-r: 0px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-3) 0 var(--s-4);
+    border-bottom: var(--border-hair) solid var(--rule);
+  }
+
+  .cmp__table tbody td.cmp__cell::before {
+    content: attr(data-brand);
+    font-size: var(--fs-small);
+    line-height: 1.2;
+    color: var(--fg-mute);
+  }
+
+  .cmp__table tbody td.cmp__cell .cmp__mark { justify-content: flex-end; }
+
+  /* --- us: the lead block of the card. Same single accent device as
+         desktop — one rule, no wash — and a voice close to the field's
+         rather than a shout: the same label size and case, one step up
+         in figure size. --- */
+  .cmp__table tbody td.cmp__cell--us {
+    --pad-l: var(--s-4);
+    --pad-r: var(--s-4);
+    display: block;
+    padding: var(--s-1) var(--s-4) var(--s-6);
+    margin-bottom: var(--s-5);
+    border-bottom: 0;
+    border-left: calc(var(--border-hair) * 2) solid var(--accent);
+  }
+
+  .cmp__table tbody td.cmp__cell--us::before {
+    display: block;
+    margin-bottom: var(--s-2);
+    font-size: var(--fs-small);
+    letter-spacing: var(--ls-body);
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  /* The us block holds one figure on its own, so the numeral slot has
+     nothing to align to here — it would only read as a stray indent.
+     The field lines below keep it: that is where 1000 and 55 meet. */
+  .cmp__table tbody td.cmp__cell--us .cmp__val {
+    min-width: 0;
+    font-size: var(--fs-h3);
+    letter-spacing: var(--ls-h3);
+  }
+
+  .cmp__table tbody td.cmp__cell--us .cmp__bar { bottom: var(--s-4); }
+
+  .cmp__table tbody td.cmp__cell--us .cmp__mark { justify-content: flex-start; }
+  .cmp__table tbody td.cmp__cell--us .cmp__check { width: 24px; height: 18px; }
+
+  .cmp__foot {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-5);
+    margin-top: var(--s-7);
+    padding-top: var(--s-6);
+    border-top: var(--border-hair) solid var(--rule);
+  }
+
+  .cmp__legend-item { grid-template-columns: 1.75rem minmax(0, 1fr); }
+
+  .cmp__title { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp__rule,
+  .cmp__fill,
+  .cmp__dash { transform: none; }
+}

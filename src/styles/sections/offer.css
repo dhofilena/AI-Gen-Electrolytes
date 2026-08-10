@@ -1,0 +1,596 @@
+/* ============================================================
+   OFFER — the ask. Dark, quiet chrome, one saturated element.
+
+   Everything the customer needs to act sits in the first viewport of
+   the section, because the nav's "Buy" anchor lands at offerTop: 0.
+   Header, price, delivery and the button share the left column; the
+   film-still takes the right and carries the only floating control.
+
+   Chrome budget: one selector on the image, one hairline delivery row,
+   one button. No bordered radio cards, no chip row, no corner radii.
+
+   CONTRAST: prices, serving text and the demo disclosure all sit at
+   --fg-mute or better. --fg-faint is decorative-only per tokens.css and
+   must never carry price or legal text.
+   ============================================================ */
+
+.offer {
+  /* Seam rhythm (tokens.css). Tight above — it continues #proof on the same
+     surface; default below into the light cut of #faq. */
+  padding-block: var(--seam-tight) var(--seam);
+}
+
+/* ---------- panel ----------
+   Desktop: head over buy in the left column, media spanning both rows
+   on the right, so the right-hand quadrant is never left empty. */
+
+.offer__panel {
+  display: grid;
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: clamp(2.5rem, 5.5vw, 6rem);
+  row-gap: clamp(1.75rem, 4vh, 3rem);
+  align-items: start;
+}
+
+.offer__head {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.offer__buy {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  gap: clamp(1.25rem, 2.6vh, 2rem);
+  align-content: start;
+}
+
+.offer__media {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  min-height: clamp(26rem, 58vh, 36rem);
+}
+
+/* The closing record spans both columns and gives the panel a terminal edge.
+   Without it the two columns simply stopped and the section handed ~100px of
+   flat ink to the white cut of #faq. */
+.offer__close {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  column-gap: clamp(var(--s-6), 4vw, var(--s-9));
+  align-items: start;
+  margin-top: clamp(var(--s-4), 2.4vh, var(--s-6));
+  padding-top: var(--s-5);
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+.offer__closelabel {
+  color: var(--fg-mute);
+  white-space: nowrap;
+}
+
+/* ---------- header ---------- */
+
+.offer__eyebrow { margin-bottom: clamp(1rem, 2.4vh, 1.75rem); }
+
+/* Leading comes from the .t-h2 tier in base.css — see the note above the type
+   primitives. This headline is at --fs-h2, so it reads --lh-tight like every
+   other --fs-h2 headline on the page. */
+.offer__title {
+  color: var(--fg);
+  max-width: 14ch;
+}
+
+/* The product's own descriptor, where a product page puts it: under the
+   name, not spliced onto the serving line with a middot. */
+.offer__tag {
+  margin-top: var(--s-4);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--fg-mute);
+  max-width: 42ch;
+}
+
+/* ---------- media ---------- */
+
+.offer__media {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  background: var(--ink-soft);
+}
+
+.offer__inner {
+  position: absolute;
+  inset: 0;
+  display: block;
+  z-index: 1;
+}
+
+/* The pack shot. Knocked back a touch so the bone type on the scrim keeps its
+   headroom; nothing else is done to it — it is the product, not a texture. */
+.offer__shot {
+  filter: saturate(0.96) brightness(0.9);
+}
+
+/* Accent light in the room, crossfading with the flavour on the same curve
+   #flavors uses. Masked to the frame's top-left so it never washes the tub
+   itself — an unbranded product must not be tinted into three fake SKUs. */
+.offer__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-color: rgba(var(--accent-rgb), 0.26);
+  -webkit-mask-image: radial-gradient(86% 78% at 10% 6%, #000 0%, rgba(0, 0, 0, 0.44) 48%, rgba(0, 0, 0, 0) 84%);
+  mask-image: radial-gradient(86% 78% at 10% 6%, #000 0%, rgba(0, 0, 0, 0.44) 48%, rgba(0, 0, 0, 0) 84%);
+  transition: background-color calc(var(--d-mid) * 1.32) var(--e-in-out);
+}
+
+.offer__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--ink-rgb), 0.22) 0%,
+    rgba(var(--ink-rgb), 0) 30%,
+    rgba(var(--ink-rgb), 0.62) 62%,
+    rgba(var(--ink-rgb), 0.92) 100%
+  );
+}
+
+/* ---------- the one floating control ----------
+   Oura floats a single selector on the product image rather than
+   stacking chips under the price. The flavour name and the swatches
+   share the foot of the frame, on the scrim that is already there —
+   no card, no pill, no border. */
+
+.offer__foot {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding: var(--s-6);
+  color: var(--on-dark);
+}
+
+.offer__cap {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.offer__capname { color: var(--on-dark); }
+
+.offer__capnote {
+  color: var(--on-dark-mute);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+}
+
+.offer__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  flex: none;
+}
+
+.offer__swatch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding-bottom: var(--s-2);
+  cursor: pointer;
+  font-size: var(--fs-small);
+  color: var(--on-dark-mute);
+  white-space: nowrap;
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+.offer__swatch::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--border-hair);
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--d-fast) var(--e-out);
+}
+
+.offer__swatch:hover { color: var(--on-dark); }
+
+.offer__swatch.is-on { color: var(--on-dark); }
+.offer__swatch.is-on::after { transform: scaleX(1); }
+
+.offer__swatch:has(:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.offer__dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+
+/* ---------- price ---------- */
+
+.offer__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-3) var(--s-4);
+}
+
+.offer__now {
+  font-size: var(--fs-h2);
+  line-height: 1;
+  letter-spacing: var(--ls-h2);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.offer__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+}
+
+/* Price text. --fg-mute is the floor: a struck price is still a price. */
+.offer__was {
+  font-size: var(--fs-body);
+  color: var(--fg-mute);
+  text-decoration-thickness: var(--border-hair);
+  text-underline-offset: 0;
+}
+
+.offer__save {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--accent);
+}
+
+.offer__serving {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--fg-mute);
+  margin-top: calc(var(--s-4) * -1);
+}
+
+/* ---------- delivery ----------
+   A hairline row, not two bordered cards. The accent segment that marks
+   the choice is the same device the benefits list uses for its reading
+   line, so the page keeps one vocabulary. */
+
+.offer__plan {
+  display: block;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+/* Held clear of the row's hairline so the accent segment reads as the mark
+   on the row, not as an underline on the word "Delivery". */
+.offer__legend {
+  display: block;
+  padding: 0;
+  margin-bottom: var(--s-5);
+  color: var(--fg-mute);
+}
+
+.offer__opts {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--s-7);
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+.offer__opt {
+  position: relative;
+  padding-block: var(--s-4) var(--s-3);
+  cursor: pointer;
+}
+
+.offer__opt::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--border-hair) * -1);
+  left: 0;
+  right: 0;
+  height: var(--border-hair);
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--d-mid) var(--e-out);
+}
+
+.offer__opt.is-on::after { transform: scaleX(1); }
+
+.offer__opt:has(:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.offer__optname {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+.offer__opt:hover .offer__optname,
+.offer__opt.is-on .offer__optname { color: var(--fg); }
+
+.offer__planline {
+  margin-top: var(--s-3);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--fg-mute);
+  max-width: 46ch;
+}
+
+/* ---------- the ask ---------- */
+
+.offer__act {
+  display: grid;
+  gap: var(--s-3);
+}
+
+/* THE ASK — hairline-led, not a bought button.
+   A full-width saturated fill was the single most template-looking object on a
+   page made entirely of hairlines and square corners, and it was the only
+   place the brand colour was used as a large flat area rather than as light.
+   The resting state is now a plate held by a hairline and capped by the SAME
+   2px accent rule that caps the "us" column in #compare and marks the selected
+   delivery option eight lines above it. It keeps every other signal of
+   primacy — full column width, the tallest object in the column, the only
+   plated one, bone type at the h4 tier — and the saturation moved to where it
+   belongs: the response to the press. */
+.offer__cta {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: 4.75rem;
+  padding: var(--s-5) var(--s-6);
+  /* A plate, not a hole: one step off the ink so the ask has a surface, with a
+     whisper of the accent in it. Bone type measures ~13:1 on this. */
+  background: color-mix(in oklab, var(--ink-veil), var(--accent) 14%);
+  color: var(--fg);
+  border-radius: 0;
+  font-size: var(--fs-h4);
+  font-weight: 700;
+  letter-spacing: var(--ls-h3);
+  text-align: left;
+  box-shadow: inset 0 0 0 var(--border-hair) var(--rule);
+  transition:
+    color var(--d-fast) var(--e-soft),
+    box-shadow var(--d-fast) var(--e-soft);
+}
+
+/* The accent floods from the left on hover/press — the page's own draw-across
+   gesture, on the house curve. */
+.offer__cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--d-mid) var(--e-out);
+}
+
+.offer__cta:hover::after,
+.offer__cta:focus-visible::after { transform: scaleX(1); }
+
+.offer__cta:hover,
+.offer__cta:focus-visible { color: var(--ink); }
+
+.offer__cta:active::after { transform: scaleX(1); }
+
+.offer__cta:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+/* The one saturated mark at rest. Drawn across on entry (offer.js). Three
+   hairlines deep — one step heavier than #compare's column cap, because this
+   is the ask and nothing else in the viewport may outrank it. */
+.offer__ctarule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--border-hair) * 3);
+  background: var(--accent);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.offer__ctalabel,
+.offer__ctaprice {
+  position: relative;
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+/* Answered: the accent leaves the ask and the plate flattens back into the
+   surface, so the live ask is always the only thing wearing brand colour. */
+.offer__cta.is-confirmed {
+  background: transparent;
+  box-shadow: inset 0 0 0 var(--border-hair) var(--fg-mute);
+}
+
+.offer__cta.is-confirmed .offer__ctarule { background: var(--fg-mute); }
+.offer__cta.is-confirmed .offer__ctaprice { color: var(--fg-mute); }
+
+.offer__ctaprice { font-weight: 700; }
+
+/* Said before the press, not after it. */
+.offer__note {
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--fg-mute);
+  max-width: 46ch;
+}
+
+.offer__status {
+  color: var(--fg);
+  max-width: 46ch;
+  opacity: 0;
+  transform: translate3d(0, 0.5rem, 0);
+  transition:
+    opacity var(--d-mid) var(--e-out),
+    transform var(--d-mid) var(--e-out);
+}
+
+.offer__status.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* Laid across the measure now that it closes the panel rather than trailing
+   the button in a 34rem column. The rule above it belongs to .offer__close. */
+.offer__assure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3) clamp(var(--s-6), 5vw, var(--s-9));
+}
+
+.offer__assureitem {
+  position: relative;
+  padding-left: var(--s-6);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--fg-mute);
+}
+
+.offer__assureitem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: var(--s-4);
+  height: var(--border-hair);
+  background: var(--fg-mute);
+}
+
+/* ============================================================
+   NARROW — the ask has to land on the first screen at 390px too.
+   Order becomes: name, the product, the price, the button.
+   ============================================================ */
+
+@media (max-width: 1180px) {
+  .offer__panel {
+    grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+    column-gap: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .offer__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+
+  .offer__pick { gap: var(--s-4); }
+}
+
+@media (max-width: 860px) {
+  /* Tightened so the button still lands inside the first screen on the
+     shortest phones (a 667px viewport shrinks every vh-based clamp at once),
+     without collapsing the space between this section and #proof above it. */
+  .offer { padding-block: var(--seam-tight) var(--seam); }
+
+  .offer__panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    row-gap: clamp(1.25rem, 2.6vh, 1.75rem);
+  }
+
+  .offer__buy { gap: clamp(1rem, 2.2vh, 1.5rem); }
+
+  .offer__legend { margin-bottom: var(--s-4); }
+
+  .offer__head { grid-row: 1; }
+  .offer__media { grid-column: 1; grid-row: 2; }
+  .offer__buy { grid-column: 1; grid-row: 3; }
+
+  .offer__close {
+    grid-column: 1;
+    grid-row: 4;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-4);
+  }
+
+  .offer__assure {
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  .offer__media {
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+
+  /* Stacked, the frame's foot reads top-to-bottom like the rest of the
+     column: what you picked, then what you can pick. A vertical swatch
+     stack would force the image taller for no gain. */
+  .offer__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+    padding: var(--s-4);
+  }
+
+  .offer__cap { gap: 0; }
+
+  .offer__pick {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-5);
+  }
+
+  .offer__tag { margin-top: var(--s-3); }
+  .offer__legend { margin-bottom: var(--s-3); }
+  .offer__opt { padding-block: var(--s-3) var(--s-2); }
+  .offer__planline { margin-top: var(--s-2); }
+
+  .offer__cta {
+    min-height: 3.75rem;
+    padding-inline: var(--s-5);
+    font-size: var(--fs-lead);
+  }
+
+  .offer__opts { column-gap: var(--s-6); }
+}
+
+@media (max-width: 420px) {
+  .offer__foot { padding: var(--s-3); }
+  .offer__swatch { font-size: var(--fs-micro); }
+  .offer__opts { column-gap: var(--s-5); }
+}

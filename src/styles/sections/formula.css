@@ -1,0 +1,429 @@
+/* ============================================================
+   FORMULA — white surface. A technical specification, not a list.
+   Precision is the whole aesthetic: hairlines, tabular figures,
+   tight tracking, generous leading, one restrained plate.
+
+   Four fixed axes carry the sheet:
+     index (left)  ·  name  ·  quantity (right)  ·  form (right)
+   Band rules are full-ink hairlines; row rules are --rule. That
+   one-step contrast is the whole banding device — no boxes, no
+   fills, no tinted headers.
+   ============================================================ */
+
+.formula {
+  /* Seam rhythm (tokens.css). --seam-tight above: pillars -> formula is a
+     step WITHIN one chapter, and at 286px the bone->white change read as a
+     rendering artifact rather than as a decision. Closing at --seam so the
+     light->dark cut into #flavors gets its full breath. */
+  padding-block: var(--seam-tight) var(--seam);
+}
+
+/* ---------- the boundary this section owns ---------- */
+
+.for__seam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--border-hair);
+  overflow: hidden;
+  z-index: var(--z-content);
+  pointer-events: none;
+}
+
+/* --fg-faint, not --rule. #f9f3db against #ffffff is a 3% step: at --rule
+   (0.12 black) the hairline sitting exactly on that step was invisible, so
+   the boundary read as a rendering artifact rather than as the drawn edge it
+   is. This is the one hairline on the page that has to be seen from across
+   the room; every other rule on a light surface stays at --rule. */
+.for__seam i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--fg-faint);
+  transform-origin: 0% 50%;
+}
+
+/* ---------- header: words are large here, numerals are not ----------
+   This block beat its reference and is deliberately untouched. */
+
+.for__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: clamp(var(--s-6), 5vw, var(--s-9));
+}
+
+.for__head > .t-eyebrow {
+  grid-column: 1 / -1;
+}
+
+.for__title {
+  grid-column: 1 / -1;
+  margin-top: clamp(var(--s-5), 3vh, var(--s-7));
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-h1);
+  font-weight: 700;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.for__body {
+  grid-column: 2 / -1;
+  margin-top: clamp(var(--s-6), 6vh, var(--s-8));
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+/* ---------- specification sheet ---------- */
+
+.for__spec {
+  margin-top: clamp(var(--s-9), 18vh, var(--s-10));
+  display: grid;
+  grid-template-columns: minmax(0, 0.44fr) minmax(0, 1fr);
+  column-gap: clamp(var(--s-6), 5vw, var(--s-9));
+}
+
+.for__specHead {
+  position: sticky;
+  top: clamp(var(--s-7), 14vh, var(--s-9));
+  align-self: start;
+}
+
+/* A stat with 900px of white to itself is allowed to be a stat. */
+.for__specCount {
+  margin-top: clamp(var(--s-4), 2.4vh, var(--s-6));
+  font-size: var(--fs-display);
+  line-height: 0.82;
+  letter-spacing: var(--ls-display);
+  font-weight: 700;
+}
+
+.for__specNote {
+  margin-top: var(--s-3);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+/* The legend: the sticky column becomes the reader's position in the sheet. */
+.for__legend {
+  margin-top: clamp(var(--s-6), 5vh, var(--s-8));
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+.for__legendItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--s-3);
+  padding-block: var(--s-3);
+  border-bottom: var(--border-hair) solid var(--rule);
+  color: var(--fg-mute);
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+.for__legendItem[data-active] { color: var(--fg); }
+
+.for__legendMark {
+  width: 1.25em;
+  height: var(--border-hair);
+  background: currentColor;
+  opacity: 0.45;
+  align-self: center;
+  transition: background-color var(--d-mid) var(--e-soft), opacity var(--d-mid) var(--e-soft);
+}
+
+.for__legendItem[data-active] .for__legendMark {
+  background: var(--accent);
+  opacity: 1;
+}
+
+.for__legendName {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.for__legendN {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  font-weight: 700;
+}
+
+/* ---------- the bands ---------- */
+
+.for__group + .for__group { margin-top: clamp(var(--s-6), 4vh, var(--s-8)); }
+
+.for__band,
+.for__row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 3.25rem)
+    minmax(0, 1fr)
+    minmax(0, 5rem)
+    minmax(0, 1fr);
+  grid-template-areas: 'idx name qty form';
+  align-items: baseline;
+  column-gap: var(--s-4);
+}
+
+/* Band header: full-ink hairline above, so the group reads as a bracket
+   rather than as one more row. */
+.for__band {
+  padding-block: var(--s-4) var(--s-4);
+  border-top: var(--border-hair) solid var(--fg);
+}
+
+.for__bandIdx {
+  grid-area: idx;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  font-weight: 700;
+  color: var(--fg-mute);
+}
+
+.for__bandName {
+  grid-area: name;
+  font-size: var(--fs-micro);
+  line-height: 1.35;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Band counts land on the same right-hand axis as the forms, so the sheet
+   always has a numeral at its right edge. */
+.for__bandN {
+  grid-area: form;
+  text-align: right;
+  font-size: var(--fs-h4);
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+  font-weight: 700;
+}
+
+.for__rows {
+  border-top: var(--border-hair) solid var(--rule);
+}
+
+.for__row {
+  padding-block: clamp(var(--s-4), 2.4vh, var(--s-5));
+  border-bottom: var(--border-hair) solid var(--rule);
+}
+
+.for__idx {
+  grid-area: idx;
+  font-size: var(--fs-micro);
+  line-height: inherit;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-mute);
+}
+
+.for__name {
+  grid-area: name;
+  font-size: var(--fs-body);
+  line-height: 1.35;
+  letter-spacing: var(--ls-body);
+  text-wrap: pretty;
+}
+
+/* A component with no separate chemical form is not missing data — it simply
+   has nothing in that column, so the name takes the measure instead of
+   parking an em-dash on the axis. */
+.for__row--solo .for__name { grid-area: name / name / form / form; }
+
+/* The two verified amounts. Tabular lining figures on their own axis.
+   No other row gets a number, and no row gets a placeholder. */
+.for__qty {
+  grid-area: qty;
+  text-align: right;
+  font-size: var(--fs-body);
+  line-height: 1.35;
+  letter-spacing: var(--ls-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.for__qty i {
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--fs-micro);
+  color: var(--fg-mute);
+  margin-left: 0.25em;
+}
+
+.for__form {
+  grid-area: form;
+  text-align: right;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  text-wrap: pretty;
+}
+
+.for__note {
+  margin-top: clamp(var(--s-5), 3vh, var(--s-6));
+  max-width: 54ch;
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  text-wrap: pretty;
+}
+
+/* ---------- the sweetener moment ---------- */
+
+.for__sweet {
+  margin-top: clamp(var(--s-9), 18vh, var(--s-10));
+  padding-top: clamp(var(--s-7), 9vh, var(--s-9));
+  border-top: var(--border-hair) solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  column-gap: clamp(var(--s-6), 6vw, var(--s-9));
+  align-items: center;
+}
+
+.for__figure {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--ink);
+}
+
+.for__figure img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-width: none;
+}
+
+.for__sweetTitle {
+  margin-top: clamp(var(--s-5), 3vh, var(--s-6));
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-h2);
+  font-weight: 700;
+  max-width: 16ch;
+  text-wrap: balance;
+}
+
+.for__sweetText {
+  margin-top: var(--s-5);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  max-width: 42ch;
+  text-wrap: pretty;
+}
+
+/* The verification run that used to close this section is gone — the same six
+   certification names were being stated here, in #proof and in the footer.
+   #proof owns them. See the note in formula.js. */
+
+/* ---------- tablet ---------- */
+
+@media (max-width: 1080px) {
+  .for__spec {
+    grid-template-columns: minmax(0, 0.36fr) minmax(0, 1fr);
+  }
+
+  .for__band,
+  .for__row {
+    grid-template-columns:
+      minmax(0, 2.75rem)
+      minmax(0, 1fr)
+      minmax(0, 4.5rem)
+      minmax(0, 0.9fr);
+  }
+
+}
+
+/* ---------- mobile: the sheet becomes a single measured column ---------- */
+
+@media (max-width: 860px) {
+  .formula {
+    padding-block: var(--seam-tight) var(--seam);
+  }
+
+  .for__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .for__title {
+    max-width: 12ch;
+  }
+
+  .for__body {
+    grid-column: 1 / -1;
+    max-width: 42ch;
+  }
+
+  .for__spec {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-7);
+  }
+
+  .for__specHead {
+    position: static;
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+
+  .for__specHead > .t-eyebrow {
+    width: 100%;
+  }
+
+  .for__specCount {
+    margin-top: 0;
+  }
+
+  .for__specNote {
+    margin-top: 0;
+  }
+
+  /* The legend is a desktop affordance for the sticky column; on a phone the
+     bands themselves are the navigation. */
+  .for__legend { display: none; }
+
+  .for__band {
+    grid-template-columns: minmax(0, 2.5rem) minmax(0, 1fr) auto;
+    grid-template-areas: 'idx name n';
+  }
+
+  .for__bandN { grid-area: n; }
+
+  .for__row {
+    grid-template-columns: minmax(0, 2.5rem) minmax(0, 1fr) auto;
+    grid-template-areas:
+      'idx name qty'
+      '.   form form';
+    row-gap: var(--s-1);
+  }
+
+  .for__row--solo .for__name { grid-area: name / name / qty / qty; }
+
+  .for__form {
+    text-align: left;
+  }
+
+  .for__sweet {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-7);
+  }
+
+  .for__figure {
+    aspect-ratio: 16 / 10;
+  }
+}

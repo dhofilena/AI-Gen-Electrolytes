@@ -1,0 +1,633 @@
+/* ============================================================
+   SCIENCE — owned by the science section agent.
+
+   One instrument, one scale, ONE X. The membrane is zero.
+   Sodium is measured up and out of it, potassium down and in —
+   both on the same vertical line, so the column is a single
+   continuous mass cut 1-part-up / 3-parts-down. Every gridline
+   is one sodium-serving apart and is drawn OVER the column, so
+   the three potassium parts are countable by eye.
+
+   All geometry derives from --sci-k-mg / --sci-na-mg, which the
+   module sets from content.js. Nothing here is a magic number.
+   ============================================================ */
+
+.science {
+  padding-block: 0;
+
+  /* Potassium reads warm (brand light), sodium reads cool/neutral. */
+  --sci-k-color: var(--dreamsicle);
+  --sci-na-color: var(--paper);
+
+  /* One scale for both masses. Potassium is the full span. */
+  --sci-kh: clamp(10rem, 33vh, 22rem);
+  --sci-nah: calc(var(--sci-kh) * var(--sci-na-mg) / var(--sci-k-mg));
+  --sci-lab: clamp(3.25rem, 7vh, 4.75rem);
+  --sci-mem: calc(var(--sci-nah) + var(--sci-lab));
+  --sci-plot-h: calc(var(--sci-mem) + var(--sci-kh) + var(--sci-lab));
+
+  --sci-bw: clamp(3rem, 5vw, 5.25rem);
+  --sci-axis: clamp(2.5rem, 3.4vw, 3.5rem);
+
+  /* THE fix: one x for both masses. A reader cannot compare a short bar
+     to a long bar across a horizontal offset — they can only read the
+     text. On one line, the proportion is the picture. */
+  --sci-col-x: 38%;
+
+  /* The cell interior runs off the right edge of the screen. Clipped by
+     .sci__stage's overflow, so it never adds document width. */
+  --sci-bleed: -50vw;
+}
+
+/* ---------- STAGE ---------- */
+
+.sci__stage {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding-block: clamp(var(--s-7), 8vh, var(--s-9));
+  background: var(--ink);
+}
+
+.sci__inner {
+  position: relative;
+  z-index: var(--z-content);
+  width: 100%;
+}
+
+.sci__grid {
+  align-items: center;
+  row-gap: var(--s-8);
+}
+
+/* ---------- COPY ---------- */
+
+/* The copy fills its five columns instead of clamping to a 34ch ribbon and
+   leaving a third of the canvas empty. The headline runs the full column;
+   the small print keeps its own, narrower measure. */
+.sci__copy {
+  grid-column: 1 / span 5;
+}
+
+.sci__head {
+  margin-top: var(--s-5);
+  max-width: 16ch;
+}
+
+.sci__steps {
+  margin-top: var(--s-7);
+  display: grid;
+  gap: var(--s-4);
+  /* ~62ch at --fs-small — a real measure, not a 34ch ribbon leaving a third
+     of the canvas dead. The headline runs wider still, to the column edge. */
+  max-width: 30rem;
+}
+
+.sci__step {
+  display: grid;
+  grid-template-columns: var(--s-6) 1fr;
+  gap: var(--s-4);
+  align-items: start;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+
+.sci__step-r {
+  position: relative;
+  height: var(--border-hair);
+  margin-top: 0.72em;
+  background: var(--fg-faint);
+}
+
+.sci__step-rk {
+  position: absolute;
+  inset: 0;
+  background: var(--sci-k-color);
+  transform-origin: 0 50%;
+}
+
+/* ---------- THE INSTRUMENT ---------- */
+
+.sci__viz {
+  grid-column: 7 / span 6;
+}
+
+.sci__plot {
+  position: relative;
+  padding-left: var(--sci-axis);
+}
+
+.sci__field {
+  position: relative;
+  height: var(--sci-plot-h);
+}
+
+/* The axis spine. */
+.sci__field::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: var(--border-hair);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--rule) 14%,
+    var(--rule) 86%,
+    transparent 100%
+  );
+}
+
+/* ---------- THE CYTOSOL — the film, masked into the cell ----------
+   Not a backdrop behind a chart. This box IS the inside of the cell:
+   it starts at the membrane, runs off the right edge of the screen, and
+   the film lives inside it. Everything above the membrane is clean ink. */
+
+.sci__cyto {
+  position: absolute;
+  left: 0;
+  right: var(--sci-bleed);
+  top: var(--sci-mem);
+  bottom: 0;
+  z-index: 0;
+  overflow: hidden;
+  /* Dissolve into ink before the potassium readout, so the label sits on
+     the stage and not on bokeh. No hard bottom edge anywhere. */
+  -webkit-mask-image: linear-gradient(to bottom, var(--ink) 0%, var(--ink) 78%, transparent 96%);
+  mask-image: linear-gradient(to bottom, var(--ink) 0%, var(--ink) 78%, transparent 96%);
+}
+
+/* Cytosol tint — the cell is lit warm from the membrane down. */
+.sci__cyto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--sci-k-color) 11%, transparent) 0%,
+    color-mix(in srgb, var(--sci-k-color) 4%, transparent) 46%,
+    transparent 88%
+  );
+}
+
+/* Strong enough to be a participant. It was 0.24 behind a rectangle and
+   read as wallpaper; here it is the only thing inside the cell. */
+.sci__film {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  opacity: 0.8;
+}
+
+.sci__film .vloop__layer {
+  filter: saturate(1.05) contrast(1.06);
+}
+
+/* Film not delivered yet: a designed cytosol glow, not a dead rectangle. */
+.science.sci--nofilm .sci__film {
+  opacity: 1;
+  background:
+    radial-gradient(
+      64% 92% at 34% 4%,
+      color-mix(in srgb, var(--sci-k-color) 40%, transparent) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      48% 78% at 82% 0%,
+      color-mix(in srgb, var(--sci-k-color) 22%, transparent) 0%,
+      transparent 76%
+    );
+}
+
+.science.sci--nofilm .vloop__layer { display: none; }
+
+/* ---------- SCALE ---------- */
+
+/* Gridlines, one sodium-serving apart. Drawn ABOVE the masses (z 3) so the
+   potassium column is visibly cut into three equal parts. */
+/* Note the tick spans the FIELD, not the bleed: --sci-col-x below is a
+   percentage of this box, so it has to measure the same axis the columns do. */
+.sci__tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: var(--border-hair);
+  background: color-mix(in srgb, var(--fg) 22%, transparent);
+}
+
+.sci__tick--in {
+  top: calc(var(--sci-mem) + var(--sci-kh) * var(--tv) / var(--sci-k-mg));
+}
+
+/* The mirrored serving line. It caps the sodium mass exactly, and carries
+   no numeral — the inside axis already states 200. */
+.sci__tick--out {
+  top: calc(var(--sci-mem) - var(--sci-kh) * var(--tv) / var(--sci-k-mg));
+  background: color-mix(in srgb, var(--fg) 16%, transparent);
+}
+
+.sci__tick-l {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  translate: 0 -50%;
+  padding-right: var(--s-3);
+  font-size: var(--fs-micro);
+  line-height: 1;
+  color: var(--fg-mute);
+}
+
+/* The notch that cuts the column. This is the whole argument: three of
+   these blocks fit between the membrane and 600. */
+.sci__tick-c {
+  position: absolute;
+  left: var(--sci-col-x);
+  top: 50%;
+  width: var(--sci-bw);
+  height: calc(var(--border-hair) * 2);
+  margin-left: calc(var(--sci-bw) / -2);
+  translate: 0 -50%;
+  background: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+
+/* Zero — the membrane. Runs to the edge of the frame: it is the horizon. */
+.sci__mem {
+  position: absolute;
+  left: 0;
+  right: var(--sci-bleed);
+  top: var(--sci-mem);
+  z-index: 4;
+  height: var(--border-hair);
+  transform-origin: 0 50%;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sci-k-color) 70%, transparent) 0%,
+    var(--fg) 22%,
+    color-mix(in srgb, var(--fg) 34%, transparent) 100%
+  );
+}
+
+.sci__mem::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--border-hair) * -6);
+  height: calc(var(--border-hair) * 13);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--sci-k-color) 22%, transparent),
+    transparent
+  );
+}
+
+/* ---------- REGION LABELS ----------
+   A quiet right-hand rail: outside / membrane / inside. Deliberately NOT
+   the eyebrow's words — "Inside the cell" already appears once on this
+   screen, and printing it twice made two labels look like one job. */
+
+.sci__memlab,
+.sci__zone {
+  position: absolute;
+  z-index: 5;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The membrane is annotated where it starts; the two zones are named where
+   the boundary actually is, one either side of the line. */
+.sci__memlab {
+  left: 0;
+  top: var(--sci-mem);
+  translate: var(--s-3) calc(-100% - var(--s-3));
+  color: var(--fg-mute);
+}
+
+.sci__zone--out {
+  right: 0;
+  top: var(--sci-mem);
+  translate: 0 calc(-100% - var(--s-3));
+  color: var(--fg-mute);
+}
+
+/* NOT --sci-k-color. "INSIDE" sits on the accent-tinted cytoplasm, so the
+   potassium orange landed orange-on-orange — median 2.31:1, worst 1.02.
+   The zone label is a diagram label and has to be readable at rest; the
+   series identity is already carried by the mass, its value and its name. */
+.sci__zone--in {
+  right: 0;
+  top: var(--sci-mem);
+  translate: 0 var(--s-3);
+  color: var(--on-dark);
+}
+
+/* ---------- ION FIELD ---------- */
+/* Transitional only: they cross the membrane while the cell fills, then
+   clear entirely. Nothing is left sitting at low opacity. */
+
+.sci__ions {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.sci__ion {
+  position: absolute;
+  left: var(--ix);
+  top: var(--sci-mem);
+  margin: calc(var(--s-5) * var(--is) / -2) 0 0 calc(var(--s-5) * var(--is) / -2);
+  width: calc(var(--s-5) * var(--is));
+  aspect-ratio: 1;
+  border-radius: var(--r-pill);
+  background: radial-gradient(
+    circle,
+    var(--sci-k-color) 0%,
+    color-mix(in srgb, var(--sci-k-color) 60%, transparent) 30%,
+    transparent 68%
+  );
+}
+
+.sci__ion--na {
+  width: calc(var(--s-4) * var(--is));
+  margin: calc(var(--s-4) * var(--is) / -2) 0 0 calc(var(--s-4) * var(--is) / -2);
+  background: radial-gradient(
+    circle,
+    var(--sci-na-color) 0%,
+    color-mix(in srgb, var(--sci-na-color) 46%, transparent) 30%,
+    transparent 68%
+  );
+}
+
+/* ---------- THE TWO MASSES, ON ONE X ---------- */
+
+/* Centred with margin, not translate — GSAP owns `transform` here and
+   would otherwise bake a stale pixel offset on resize. */
+.sci__col {
+  position: absolute;
+  left: var(--sci-col-x);
+  z-index: 2;
+  width: var(--sci-bw);
+  margin-left: calc(var(--sci-bw) / -2);
+  pointer-events: none;
+}
+
+.sci__col--na {
+  top: calc(var(--sci-mem) - var(--sci-nah));
+  height: var(--sci-nah);
+  transform-origin: 50% 100%;
+}
+
+.sci__col--k {
+  top: var(--sci-mem);
+  height: var(--sci-kh);
+  transform-origin: 50% 0%;
+}
+
+.sci__bar {
+  position: absolute;
+  inset: 0;
+}
+
+/* Soft column-of-light bloom, wider than the mass itself. */
+.sci__bar::before {
+  content: '';
+  position: absolute;
+  left: -80%;
+  right: -80%;
+  top: 0;
+  bottom: 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--ink) 50%, transparent);
+  mask-image: linear-gradient(to right, transparent, var(--ink) 50%, transparent);
+}
+
+.sci__col--k .sci__bar {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--sci-k-color) 30%, transparent) 0%,
+    color-mix(in srgb, var(--sci-k-color) 66%, transparent) 62%,
+    var(--sci-k-color) 97%,
+    color-mix(in srgb, var(--sci-k-color) 55%, var(--island)) 100%
+  );
+}
+
+.sci__col--k .sci__bar::before {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--sci-k-color) 26%, transparent) 100%
+  );
+}
+
+.sci__col--na .sci__bar {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--sci-na-color) 14%, transparent) 0%,
+    color-mix(in srgb, var(--sci-na-color) 34%, transparent) 62%,
+    color-mix(in srgb, var(--sci-na-color) 88%, transparent) 97%,
+    var(--sci-na-color) 100%
+  );
+}
+
+.sci__col--na .sci__bar::before {
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    color-mix(in srgb, var(--sci-na-color) 12%, transparent) 100%
+  );
+}
+
+/* ---------- READOUTS ---------- */
+
+/* Zero-width rail: children centre on the shared column axis without a
+   transform. Sodium reads above the mass, potassium below it — same x. */
+.sci__val {
+  position: absolute;
+  left: var(--sci-col-x);
+  z-index: 5;
+  width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sci__val > * { flex: none; }
+
+.sci__val--na {
+  top: 0;
+  height: var(--sci-lab);
+  justify-content: flex-end;
+  padding-bottom: var(--s-3);
+}
+
+.sci__val--k {
+  top: calc(var(--sci-mem) + var(--sci-kh));
+  height: var(--sci-lab);
+  justify-content: flex-start;
+  padding-top: var(--s-3);
+}
+
+.sci__val-n {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.24em;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+}
+
+.sci__val--k .sci__val-n { color: var(--sci-k-color); }
+.sci__val--na .sci__val-n { color: var(--sci-na-color); }
+
+.sci__val-u {
+  font-size: var(--fs-small);
+  font-weight: 400;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+}
+
+.sci__val-name {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--fg-mute);
+}
+
+/* ---------- CHART FOOTER ---------- */
+
+.sci__foot {
+  position: relative;
+  z-index: var(--z-content);
+  margin-top: var(--s-6);
+  padding-top: var(--s-4);
+  border-top: var(--border-hair) solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4) var(--s-5);
+}
+
+.sci__ratio {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.sci__ratio-n {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--ls-h3);
+  color: var(--sci-k-color);
+}
+
+.sci__ratio-l {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+/* Short laptop viewports: the pinned stage is a fixed 100vh, so buy
+   back vertical room rather than let the copy clip. */
+@media (min-width: 861px) and (max-height: 720px) {
+  .sci__stage { padding-block: var(--s-6); }
+  .sci__head { margin-top: var(--s-4); }
+  .sci__steps { margin-top: var(--s-5); gap: var(--s-3); }
+  .sci__foot { margin-top: var(--s-5); }
+}
+
+/* ---------- MOBILE: no pin, one stacked reveal ---------- */
+
+@media (max-width: 860px) {
+  .science {
+    --sci-kh: clamp(9rem, 29vh, 15rem);
+    --sci-lab: clamp(3.25rem, 6.5vh, 4.25rem);
+    --sci-bw: clamp(2.25rem, 10vw, 3.5rem);
+    --sci-axis: 2.6rem;
+    /* Same single x. It also walks the column clear of the right-hand
+       label rail, which used to crowd "CELL MEMBRANE" at 390px. */
+    --sci-col-x: 36%;
+  }
+
+  .sci__stage {
+    height: auto;
+    display: block;
+    /* Seam rhythm (tokens.css): stacked, this padding IS the section's top and
+       bottom edge. --seam-tight above because #myth asks the question this
+       section answers; #pillars pays --seam-open below for the chapter break. */
+    padding-block: var(--seam-tight);
+  }
+
+  .sci__copy,
+  .sci__viz {
+    grid-column: 1 / -1;
+  }
+
+  .sci__copy { max-width: 42ch; }
+  .sci__head { max-width: 18ch; }
+  .sci__steps { max-width: none; }
+  .sci__viz { margin-top: var(--s-8); }
+
+  .sci__grid { row-gap: 0; }
+
+  /* At 390px "CELL MEMBRANE" is the widest label and the column sits left of
+     centre, so the rails swap: the long label takes the empty right side and
+     the two short zone words take the left. */
+  .sci__memlab {
+    left: auto;
+    right: 0;
+    translate: 0 calc(-100% - var(--s-3));
+  }
+
+  .sci__zone--out {
+    right: auto;
+    left: 0;
+    translate: var(--s-3) calc(-100% - var(--s-3));
+  }
+
+  .sci__zone--in {
+    right: auto;
+    left: 0;
+    translate: var(--s-3) var(--s-3);
+  }
+}
+
+@media (max-width: 460px) {
+  .sci__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-4);
+  }
+}
+
+/* ---------- REDUCED MOTION ---------- */
+/* CSS already holds the resolved state; soften the ambient film, and drop
+   the ion layer — its whole meaning is the crossing, and with no motion the
+   dots would just sit in a row on the membrane. */
+@media (prefers-reduced-motion: reduce) {
+  .sci__film { opacity: 0.5; }
+  .sci__ions { display: none; }
+}

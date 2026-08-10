@@ -1,0 +1,628 @@
+/* ============================================================
+   FLAVORS — the configurator.
+   One flavor owns the frame at a time. Everything that carries
+   colour (wash, film, type accent, tab fill) crosses over on the
+   same weighted curve when [data-flavor] changes.
+   ============================================================ */
+
+.flavors {
+  padding-block: 0;
+}
+
+.flv {
+  /* Colour swap timing — derived from the token scale so
+     prefers-reduced-motion collapses it automatically. */
+  --flv-swap: calc(var(--d-mid) * 1.32);
+
+  /* Brand colour lifted just enough to hold as type on ink.
+     Berry is the dark one, so it needs more lift than the others. */
+  --flv-tint: color-mix(in oklab, var(--accent), var(--on-dark) 16%);
+
+  /* How much extra ink this flavour's film needs under the copy.
+     ACCESSIBILITY: one scrim cannot serve three films. Tuned for the
+     dark ones it let lemonade's plume come through at 1.99:1 mean /
+     1.22:1 worst against 14px body copy — AA needs 4.5:1. This scales
+     `.flv__lift`, which crossfades on the same curve as the colour. */
+  --flv-lift: 0.42;
+
+  position: relative;
+}
+
+.flv[data-flavor='lemonade'] { --flv-lift: 1; }
+.flv[data-flavor='tropical'] { --flv-lift: 0.66; }
+
+.flv[data-flavor='berry'] {
+  --flv-tint: color-mix(in oklab, var(--accent), var(--on-dark) 54%);
+}
+
+/* ---------- stage ---------- */
+
+/* 320vh, not 400. Three names and three one-line descriptions were costing
+   four screens of scroll — the highest scroll-cost-per-word on the page. The
+   distribution inside the track is untouched (RANGES in flavors.js hold each
+   flavour for 30/34/36% of it, verified even), so nothing is lost or hurried:
+   the same sequence now runs over 2880px instead of 3600px, which is within
+   10px of the phone's own travel (340svh x 844). */
+.flv__track {
+  position: relative;
+  height: 320vh;
+  height: 320svh;
+}
+
+.flv__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+/* Static, so the film column can absolutely fill the STAGE rather than
+   the gutter-inset wrap. Same trick the phone layout already used. */
+.flv__inner {
+  position: static;
+  width: 100%;
+  align-items: center;
+}
+
+/* Ink under the copy. The film is the whole page now, so the type needs
+   a floor to stand on: heavy on the copy side, gone by two thirds, plus
+   a light top/bottom close so the frame does not bleed off. */
+.flv__scrim {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to right,
+      rgba(var(--ink-rgb), 0.95) 0%,
+      rgba(var(--ink-rgb), 0.88) 20%,
+      rgba(var(--ink-rgb), 0.64) 38%,
+      rgba(var(--ink-rgb), 0.24) 58%,
+      rgba(var(--ink-rgb), 0) 78%
+    ),
+    linear-gradient(
+      to top,
+      rgba(var(--ink-rgb), 0.52) 0%,
+      rgba(var(--ink-rgb), 0) 34%,
+      rgba(var(--ink-rgb), 0) 66%,
+      rgba(var(--ink-rgb), 0.44) 100%
+    );
+}
+
+/* Accent light in the room — now pooled OVER the film where the type
+   sits, so the copy reads out of coloured shadow instead of the wash
+   being occluded behind a card. Only the colour transitions, so the
+   crossfade stays cheap and smooth. */
+.flv__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-color: rgba(var(--accent-rgb), 0.17);
+  /* alpha channel only — not a palette colour */
+  -webkit-mask-image: radial-gradient(74% 86% at 12% 62%, #000 0%, rgba(0, 0, 0, 0.44) 44%, rgba(0, 0, 0, 0) 80%);
+  mask-image: radial-gradient(74% 86% at 12% 62%, #000 0%, rgba(0, 0, 0, 0.44) 44%, rgba(0, 0, 0, 0) 80%);
+  transition: background-color var(--flv-swap) var(--e-in-out);
+  pointer-events: none;
+}
+
+/* Above the wash, so it also damps the accent light on the bright
+   flavours — a yellow wash over a yellow plume is exactly what pushed
+   lemonade under 2:1. */
+.flv__lift {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: var(--flv-lift);
+  transition: opacity var(--flv-swap) var(--e-in-out);
+  background: linear-gradient(
+    to right,
+    var(--ink) 0%,
+    rgba(var(--ink-rgb), 0.86) 26%,
+    rgba(var(--ink-rgb), 0.54) 44%,
+    rgba(var(--ink-rgb), 0.16) 62%,
+    rgba(var(--ink-rgb), 0) 80%
+  );
+}
+
+/* ---------- film — the object IS the page ---------- */
+
+/* It used to be a 405x720 plate floating in the right 28% of the frame:
+   22.5% of a 1440x900 canvas, hard-edged, identical byte-for-byte across
+   all three flavours with only the ink inside it changing. Now the film
+   fills the stage and every flavour re-stages the whole page. */
+/* No z-index. `z-index: 0` made this a stacking context, which trapped
+   `.flv__inset` (z-index 4) *below* `.flv__scrim` (z-index 1) and knocked the
+   thumbnail captions to 3.36:1 — the same species of bug as the nav scrim
+   painting over the CTA. With z-index auto this is not a stacking context, so
+   the film still paints under the scrim (tree order, no z-index) while the
+   inset's own z-index competes globally and correctly sits above it. */
+.flv__col--film {
+  position: absolute;
+  inset: 0;
+}
+
+.flv__film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  background: var(--ink-soft);
+}
+
+.flv__film .media-inner {
+  position: absolute;
+  inset: 0;
+}
+
+.flv__cell {
+  position: absolute;
+  inset: 0;
+  background: var(--accent); /* resolved per-cell by its own data-flavor */
+  opacity: 0;
+  transition: opacity var(--flv-swap) var(--e-in-out);
+  will-change: opacity;
+}
+
+.flv__cell.is-active {
+  opacity: 1;
+}
+
+.flv__vid {
+  z-index: 1;
+}
+
+/* The clips are 9:16. Filling a 16:10 stage keeps roughly the middle
+   third of their height, and on lemonade that third is the grey smoke
+   above the bloom — the frame read colourless, which breaks the one
+   rule this section has (exactly one flavour owns the frame). Biasing
+   the crop low lands every clip on its coloured mass. */
+@media (min-width: 861px) {
+  .flv__still,
+  .flv__vid {
+    object-position: 50% 60%;
+  }
+}
+
+.flv__vid.is-failed {
+  opacity: 0;
+}
+
+/* Detail crop — the second scale in the composition, parked in the
+   frame's bottom-right corner now that the film is full-bleed and the
+   copy owns the left. Hairline rather than a chunky ink outline: on a
+   full-bleed film an inset ring reads as a sticker.
+
+   MOUNTED, NOT FLOATING. As a bare square it had nothing to say what it was
+   and read as an orphan; and it was the one element whose only anchor was a
+   drifting transform, so at the extremes of the track it could meet the frame
+   edge. It is now a plate on its own ink with a captioned foot — the caption
+   strip is what makes it legible over a bright film, and naming the flavour is
+   what ties it to the selection. The foot offset dropped a step so the whole
+   mount, caption included, clears the stage edge at every scroll position. */
+.flv__inset {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(var(--s-6), 7vh, var(--s-8));
+  z-index: 4;
+  width: clamp(8rem, 11vw, 13rem);
+  margin: 0;
+  background: var(--ink);
+  box-shadow: 0 0 0 var(--border-hair) var(--rule);
+}
+
+.flv__inset-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.flv__inset-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3) calc(var(--s-2) + var(--s-1));
+  border-top: var(--border-hair) solid var(--rule);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.flv__inset-k { color: var(--fg-mute); }
+
+/* Stacked so the name crossfades with the image rather than snapping to the
+   new flavour while the plate behind it is still 818ms from agreeing. */
+.flv__inset-vs {
+  display: inline-grid;
+  text-align: right;
+}
+
+.flv__inset-v {
+  grid-area: 1 / 1;
+  justify-self: end;
+  color: var(--flv-tint);
+  opacity: 0;
+  transition:
+    opacity var(--flv-swap) var(--e-in-out),
+    color var(--flv-swap) var(--e-in-out);
+}
+
+.flv__inset-v.is-active { opacity: 1; }
+
+.flv__inset-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Per-flavour crop. `lemon-macro` and `peach-macro` both read ORANGE
+     at the default centre-left crop, so two of three flavours were
+     getting a near-identical second plate — and lemonade's was orange
+     while its identity is yellow. These crops pull the yellow band out
+     of the lemon and the pale grapefruit off the top of the peach. */
+  object-position: 32% 68%;
+  transform: scale(1.12);
+  opacity: 0;
+  transition: opacity var(--flv-swap) var(--e-in-out);
+}
+
+.flv__inset-img[data-flv='lemonade'] {
+  object-position: 100% 54%;
+  transform: scale(1.9);
+}
+
+.flv__inset-img[data-flv='tropical'] {
+  object-position: 30% 4%;
+  transform: scale(1.5);
+}
+
+.flv__inset-img.is-active {
+  opacity: 1;
+}
+
+/* ---------- copy ---------- */
+
+/* Six columns, anchored left over the full-bleed film — wide enough for
+   the display lockup, narrow enough that the scrim can clear by 78% and
+   leave two thirds of the film untouched. */
+.flv__col--copy {
+  grid-row: 1;
+  grid-column: 1 / span 6;
+  position: relative;
+  z-index: var(--z-content);
+  min-width: 0;
+}
+
+.flv__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  max-width: 26rem;
+  margin-bottom: clamp(var(--s-6), 5vh, var(--s-8));
+}
+
+.flv__meta-rule {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--rule);
+}
+
+.flv__count {
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-mute);
+  flex: none;
+}
+
+/* Two stacked digits inside a clip, rolled by rollCount() on exactly the
+   copy's curve. A textContent swap here landed the new index 818ms
+   before the stage agreed with it. */
+.flv__count-now {
+  display: inline-grid;
+  overflow: hidden;
+  color: var(--flv-tint);
+  transition: color var(--flv-swap) var(--e-in-out);
+}
+
+.flv__count-d {
+  grid-area: 1 / 1;
+  will-change: transform;
+}
+
+.flv__panel {
+  display: grid;
+}
+
+.flv__panel:focus-visible {
+  outline: 2px solid var(--flv-tint);
+  outline-offset: clamp(0.75rem, 1.4vw, 1.5rem);
+}
+
+.flv__copy {
+  grid-area: 1 / 1;
+}
+
+.flv__name {
+  margin: 0;
+}
+
+.flv__name .line-mask > span {
+  display: block;
+}
+
+/* A line mask clips to the line box, and display leading is tighter than
+   the glyph box — so grow the mask for descenders and pull the growth
+   back out of the layout. */
+.flv__name .line-mask {
+  padding-bottom: 0.15em;
+  margin-bottom: -0.15em;
+}
+
+.flv__note .line-mask {
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.flv__note {
+  margin-top: clamp(var(--s-4), 2.4vh, var(--s-6));
+  font-size: var(--fs-h4);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h3);
+  color: var(--flv-tint);
+  transition: color var(--flv-swap) var(--e-in-out);
+}
+
+/* Copy sits on the film at every breakpoint now, so it takes the phone's
+   treatment everywhere: full --fg knocked back by opacity rather than
+   --fg-mute, which leaves more headroom over a lit backdrop. */
+.flv__desc {
+  margin-top: var(--s-5);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg);
+  opacity: 0.74;
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+
+/* ---------- selector ---------- */
+
+.flv__tabs {
+  display: flex;
+  gap: clamp(var(--s-4), 1.6vw, var(--s-6));
+  margin-top: clamp(var(--s-7), 7vh, var(--s-9));
+  max-width: 34rem;
+}
+
+.flv__tab {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: block;
+  text-align: left;
+  padding-top: var(--s-4);
+}
+
+.flv__tab-track {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: block;
+  height: 1px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.flv__tab-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background-color: var(--flv-tint);
+  transform: scaleX(var(--flv-fill, 0));
+  transform-origin: 0 50%;
+  /* The outgoing tab's fill eases back over the same 818ms the film
+     takes; the active one has no transform transition so it still
+     tracks the scrub frame-for-frame. */
+  transition:
+    background-color var(--flv-swap) var(--e-in-out),
+    transform var(--flv-swap) var(--e-in-out);
+}
+
+.flv__tab.is-active .flv__tab-fill {
+  transition: background-color var(--flv-swap) var(--e-in-out);
+}
+
+.flv__tab-n {
+  display: block;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--fg-mute);
+  transition: color var(--d-mid) var(--e-in-out);
+}
+
+.flv__tab-label {
+  display: block;
+  margin-top: var(--s-2);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  transition: color var(--d-mid) var(--e-in-out);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The incoming label lights on the film's own curve and duration, so
+   the selector and the stage arrive together. */
+.flv__tab.is-active .flv__tab-label {
+  color: var(--fg);
+  transition: color var(--flv-swap) var(--e-in-out);
+}
+
+.flv__tab.is-active .flv__tab-n {
+  color: var(--flv-tint);
+  transition: color var(--flv-swap) var(--e-in-out);
+}
+
+.flv__tab:focus-visible {
+  outline: 2px solid var(--flv-tint);
+  outline-offset: var(--s-2);
+  border-radius: var(--r-sm);
+}
+
+@media (hover: hover) {
+  .flv__tab:hover .flv__tab-label,
+  .flv__tab:hover .flv__tab-n {
+    color: var(--fg-mute);
+  }
+
+  .flv__tab.is-active:hover .flv__tab-label {
+    color: var(--fg);
+  }
+
+  .flv__tab.is-active:hover .flv__tab-n {
+    color: var(--flv-tint);
+  }
+}
+
+/* ---------- short desktop viewports ---------- */
+
+@media (min-width: 861px) and (max-height: 800px) {
+  .flv__name {
+    font-size: var(--fs-h1);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-h1);
+  }
+}
+
+/* Under ~1100px the copy already reaches most of the frame; a corner
+   plate on top of that is clutter, not a second scale. */
+@media (min-width: 861px) and (max-width: 1099px) {
+  .flv__inset {
+    display: none;
+  }
+}
+
+/* ============================================================
+   PHONE — the 9:16 film owns the whole screen.
+   ============================================================ */
+
+@media (max-width: 860px) {
+  .flv__track {
+    height: 340vh;
+    height: 340svh;
+  }
+
+  .flv__stage {
+    align-items: stretch;
+  }
+
+  /* The film column is already stage-filling at every width; the phone
+     only needs the inner to stop being a grid. */
+  .flv__inner {
+    display: block;
+    height: 100%;
+  }
+
+  .flv__inset {
+    display: none;
+  }
+
+  /* Bottom-up rather than left-weighted: the copy runs the width here. */
+  .flv__scrim {
+    background: linear-gradient(
+      to top,
+      var(--ink) 0%,
+      rgba(var(--ink-rgb), 0.88) 27%,
+      rgba(var(--ink-rgb), 0.26) 58%,
+      rgba(var(--ink-rgb), 0.34) 82%,
+      rgba(var(--ink-rgb), 0.62) 100%
+    );
+  }
+
+  /* the accent pools over the scrim, so the type sits in coloured shadow */
+  .flv__wash {
+    background-color: rgba(var(--accent-rgb), 0.16);
+    -webkit-mask-image: radial-gradient(120% 62% at 50% 100%, #000 0%, rgba(0, 0, 0, 0.42) 46%, rgba(0, 0, 0, 0) 82%);
+    mask-image: radial-gradient(120% 62% at 50% 100%, #000 0%, rgba(0, 0, 0, 0.42) 46%, rgba(0, 0, 0, 0) 82%);
+  }
+
+  /* Much gentler than the desktop lift. The phone's bottom-up scrim
+     already measures 7.3:1 worst-clip-frame on lemonade, so this is
+     margin, not rescue — pushed any harder it flattens the plume the
+     phone layout exists to show. Gone entirely above 74%. */
+  .flv__lift {
+    background: linear-gradient(
+      to top,
+      rgba(var(--ink-rgb), 0.24) 0%,
+      rgba(var(--ink-rgb), 0.32) 26%,
+      rgba(var(--ink-rgb), 0.26) 44%,
+      rgba(var(--ink-rgb), 0.08) 60%,
+      rgba(var(--ink-rgb), 0) 74%
+    );
+  }
+
+  .flv__col--copy {
+    grid-column: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-block: clamp(var(--s-7), 11vh, var(--s-9)) clamp(var(--s-6), 5vh, var(--s-8));
+  }
+
+  .flv__meta {
+    max-width: none;
+    margin-bottom: 0;
+  }
+
+  .flv__desc {
+    max-width: 34ch;
+  }
+
+  .flv__tabs {
+    max-width: none;
+    gap: var(--s-4);
+    margin-top: clamp(var(--s-6), 5vh, var(--s-8));
+  }
+
+  .flv__tab {
+    padding-top: var(--s-3);
+    padding-bottom: var(--s-2);
+  }
+
+  .flv__tab-label {
+    font-size: var(--fs-small);
+  }
+}
+
+@media (max-width: 620px) {
+  /* --fs-display is the widest step whose longest word ("Lemonade",
+     "Balanced") still clears a 390px gutter. Do not reach for --fs-mega
+     here; it overruns the frame at phone widths. */
+  .flv__note {
+    font-size: var(--fs-lead);
+  }
+
+  .flv__desc {
+    font-size: var(--fs-small);
+    max-width: 30ch;
+  }
+}

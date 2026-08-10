@@ -1,0 +1,288 @@
+/* ============================================================
+   RITUAL — the pause. One film, the whole viewport, type set into it.
+   Tokens only. Nothing here is louder than it needs to be.
+
+   ROUND 4 — FOOT-ANCHORED. #flavors sits directly above this section:
+   dark, full-bleed, film, with an eyebrow-rule + huge headline lockup
+   in the top-left. Repeating that arrangement one viewport later made
+   the pair read as a single section printed twice. So this frame is
+   composed the other way up:
+
+     top 40%      nothing. Film only.
+     ~40–55%      the annotation, small, left, with the leader rule
+                  running out of it and dying inside the picture.
+     ~55–68%      nothing again.
+     foot         ONE wide line of display type standing on a
+                  full-width hairline record. The eyebrow is that
+                  record's label, not a headline's kicker.
+
+   Consequences of turning the composition upside down, all of them
+   deliberate: the scrim gradient is inverted (ink pools at the floor
+   and clears going up, instead of washing in from the left and top);
+   the habit record moved from a strip under a hole to the plinth the
+   headline stands on; and the section pays its own half of the seam
+   into #compare from INSIDE the film, because a full-bleed section
+   cannot pay it with section padding.
+   ============================================================ */
+
+.ritual {
+  /* Full-bleed by design: the section IS the frame, so it has no outer
+     padding. The seam into #compare is paid by .rit__field's bottom
+     padding instead — see the note there. */
+  padding-block: 0;
+  overflow: clip;
+}
+
+/* ---------- THE FRAME ---------- */
+
+.rit__stage {
+  position: relative;
+  margin: 0;
+  min-height: 100svh;
+  display: grid;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.rit__film {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-bg);
+}
+
+/* Vertical headroom so the drift never exposes an edge of the clip. */
+.rit__film .vloop__layer {
+  top: -5%;
+  height: 110%;
+  object-position: 50% 34%;
+}
+
+/* THE CROP, AGAINST THE TYPE.
+   The clip is 16:9 inside a frame that is always taller than 16:9 here, so
+   cover scales it to HEIGHT and the vertical term above never fires — the only
+   lever that does anything is the horizontal pan. Centred, the subject sat
+   dead in the middle of the frame, which is where every line of type in this
+   section also is: the annotation and its leader rule ran straight across her
+   face on the tightest frames of the loop, and the statement crossed her at
+   the foot. Panning the crop left shows more of the source's left side and
+   moves HER right (0.24 of the horizontal overflow, ~77px at 1440x900), which
+   opens the left third the type actually occupies. A percentage, not a length,
+   because the overflow varies with viewport aspect and a fixed px offset would
+   expose an edge on a 16:9 monitor. Phones keep the centred crop: portrait
+   overflow is ~1260px there and the same fraction would push her off frame. */
+@media (min-width: 861px) {
+  .rit__film .vloop__layer { object-position: 26% 34%; }
+}
+
+/* ---------- SCRIM, INVERTED ----------
+   Foot-anchored type needs a floor, not a left-hand wash. Ink pools at
+   the bottom edge where the record and the statement sit, thins through
+   the middle, and is gone by the top third so the film's brightest
+   passage — the subject, the light behind her — plays untouched. That
+   clear top is the single loudest difference between this frame and the
+   flavour frame above it.
+
+   TWO LAYERS, because one could not do the job:
+
+   1. THE POOL. The annotation floats at ~45% of the frame, which on the
+      worst frame of the loop is a near-white wall plus a lit bottle. A
+      floor strong enough to fix that by itself measured 0.6 alpha across
+      the whole middle and killed the film. This is a soft ellipse of ink
+      under the annotation only — a grader's power window — so the copy
+      gets its backdrop and her face keeps the light. Measured: body copy
+      3.29:1 before, 7.4:1 after, against the brightest sampled frame.
+   2. THE FLOOR. Bottom-up, carrying the statement and the record. */
+.rit__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 40% 21% at 20% 45%,
+      rgba(var(--ink-rgb), 0.4) 0%,
+      rgba(var(--ink-rgb), 0.34) 52%,
+      rgba(var(--ink-rgb), 0.14) 80%,
+      rgba(var(--ink-rgb), 0) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(var(--ink-rgb), 0.95) 0%,
+      rgba(var(--ink-rgb), 0.92) 20%,
+      rgba(var(--ink-rgb), 0.8) 34%,
+      rgba(var(--ink-rgb), 0.62) 46%,
+      rgba(var(--ink-rgb), 0.46) 56%,
+      rgba(var(--ink-rgb), 0.24) 70%,
+      rgba(var(--ink-rgb), 0.08) 85%,
+      rgba(var(--ink-rgb), 0) 100%
+    );
+}
+
+/* ---------- THE FIELD ----------
+   Two beats, held apart by the frame itself. `space-between` pins the
+   annotation to the top padding and the lockup to the bottom padding;
+   whatever is left over becomes the air between them.
+
+   The top padding is what places the annotation at ~40% — it is the
+   composition, not a margin, and it is deliberately uncapped so the
+   annotation holds the same fraction of the frame at any height and
+   stays inside the scrim's pool. The bottom padding is --seam: this
+   section is full-bleed so it cannot pay its half of the
+   ritual->compare seam with section padding, and #compare pays the
+   matching half. */
+.rit__field {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100svh;
+  display: grid;
+  align-content: space-between;
+  padding-block: max(var(--s-9), 40vh) var(--seam);
+  color: var(--on-dark);
+}
+
+/* ---------- ANNOTATION ON A LEADER RULE ----------
+   Polestar's move, kept: the caption belongs to the picture, so the rule
+   runs out of the text and into the image instead of a box around it.
+   Re-anchored — it is no longer a footnote under a headline, it is the
+   only mark in the middle of the frame. */
+
+.rit__note {
+  display: grid;
+  grid-template-columns: minmax(0, 42ch) minmax(0, 1fr);
+  align-items: start;
+  column-gap: clamp(var(--s-5), 3vw, var(--s-7));
+}
+
+.rit__body {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--on-dark);
+  text-wrap: pretty;
+}
+
+.rit__leader {
+  display: block;
+  /* Stops well short of the frame edge so it visibly terminates INSIDE
+     the picture rather than running off it — and short of the SUBJECT. At
+     24vw it reached 830px on a 1440 frame and drew a horizontal line across
+     her eyes on the tightest frames of the loop. 11vw dies in the film to the
+     left of her at every frame, which is what an annotation leader is for. */
+  width: min(11vw, 100%);
+  height: var(--border-hair);
+  margin-top: 0.78em;
+  background: currentColor;
+  opacity: 0.42;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* ---------- THE FOOT LOCKUP ----------
+   One line of display type standing on the record. Wide and low, where
+   #flavors is tall and columnar. */
+
+.rit__foot {
+  display: grid;
+  row-gap: clamp(var(--s-5), 4.5vh, var(--s-7));
+}
+
+/* t-h1, not t-display: at --fs-display "One glass, once a day." cannot
+   hold a single line at 1440 and falls back to the same stacked two-line
+   block #flavors uses. The tier that keeps it on one line is what makes
+   this a horizon of type rather than a column of it — and 89px at
+   --lh-display / --ls-h1 is still display scale. Leading comes from the
+   tier; nothing is overridden here. */
+.rit__head {
+  color: var(--on-dark);
+}
+
+/* ---------- HABIT RECORD, AS THE PLINTH ----------
+   Was a strip stranded at the bottom of the old layout with a hole above
+   it. Now it is the ground the statement stands on, and the eyebrow is
+   its label — which is how the eyebrow got out of the top-left corner. */
+
+.rit__plinth {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  column-gap: clamp(var(--s-6), 4vw, var(--s-9));
+  align-items: start;
+  padding-top: var(--s-4);
+  border-top: var(--border-hair) solid var(--rule-dark);
+}
+
+.rit__eyebrow { color: var(--on-dark-mute); }
+
+.rit__spec {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: clamp(var(--s-4), 1.6vw, var(--s-5));
+}
+
+.rit__spec-item {
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+}
+
+/* 11px factual labels: --on-dark-mute, never the decorative tier. */
+.rit__spec-k { color: var(--on-dark-mute); }
+
+.rit__spec-v {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--on-dark);
+  text-wrap: pretty;
+}
+
+/* ---------- NARROW ---------- */
+
+@media (max-width: 860px) {
+  /* Portrait crops the film to its centre and the lockup grows taller, so
+     the floor has to reach further up the frame — but it still clears
+     completely by the top quarter, which is the whole point of the
+     inversion. */
+  .rit__scrim {
+    background:
+      radial-gradient(
+        ellipse 66% 16% at 50% 45%,
+        rgba(var(--ink-rgb), 0.42) 0%,
+        rgba(var(--ink-rgb), 0.36) 52%,
+        rgba(var(--ink-rgb), 0.15) 80%,
+        rgba(var(--ink-rgb), 0) 100%
+      ),
+      linear-gradient(
+        to top,
+        rgba(var(--ink-rgb), 0.95) 0%,
+        rgba(var(--ink-rgb), 0.93) 28%,
+        rgba(var(--ink-rgb), 0.86) 44%,
+        rgba(var(--ink-rgb), 0.7) 56%,
+        rgba(var(--ink-rgb), 0.44) 68%,
+        rgba(var(--ink-rgb), 0.2) 82%,
+        rgba(var(--ink-rgb), 0.04) 100%
+      );
+  }
+
+  /* One column, so the leader would be a stub on its own row. */
+  .rit__note { grid-template-columns: minmax(0, 1fr); }
+  .rit__leader { display: none; }
+
+  /* Three columns need real width. Stacked, the record becomes a hairline
+     table — same information, no cramped wrapping. */
+  .rit__plinth {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s-4);
+  }
+
+  .rit__spec { grid-template-columns: minmax(0, 1fr); }
+
+  .rit__spec-item {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--s-4);
+    padding-block: var(--s-3);
+    border-top: var(--border-hair) solid var(--rule-dark);
+  }
+
+  .rit__spec-v { text-align: right; }
+}

@@ -1,0 +1,268 @@
+/* ============================================================
+   BASE — reset, primitives, shared reveal machinery
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto; /* Lenis owns scrolling */
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--on-dark);
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+}
+
+body.is-locked { overflow: hidden; height: 100vh; }
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+img, video, canvas, svg { display: block; max-width: 100%; }
+img, video { height: auto; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+table { border-collapse: collapse; width: 100%; }
+
+::selection { background: var(--dreamsicle); color: var(--ink); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---------- LAYOUT PRIMITIVES ---------- */
+
+/* The default seam. A section that says nothing about its own edges lands
+   on the page rhythm automatically — see --seam in tokens.css. Sections that
+   need a different boundary pick another --seam-* value, never a loose clamp. */
+.section {
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  padding-block: var(--seam);
+  isolation: isolate;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.wrap--narrow { max-width: 1180px; }
+
+.grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 1.6vw, 1.75rem);
+}
+
+@media (max-width: 860px) {
+  .grid12 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+/* ---------- TYPE PRIMITIVES ---------- */
+
+.t-mega, .t-display, .t-h1, .t-h2, .t-h3 {
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+/* LEADING IS A FUNCTION OF SIZE, and only of size. mega/display/h1 are all
+   display type and all take --lh-display; h2 and below take --lh-tight or
+   looser. Sections were choosing between 0.88 and 0.95 at the SAME optical
+   size — formula set 0.88 at --fs-h1 while compare and faq sat at 0.95, and
+   benefits and offer set 0.88 at --fs-h2 while science sat at 0.95. Same
+   words, same size, two different answers, four times over. Do not override
+   line-height on a headline in a section file; pick the right tier here. */
+.t-mega    { font-size: var(--fs-mega);    line-height: var(--lh-mega);    letter-spacing: var(--ls-mega); }
+.t-display { font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--ls-display); }
+.t-h1      { font-size: var(--fs-h1);      line-height: var(--lh-display); letter-spacing: var(--ls-h1); }
+.t-h2      { font-size: var(--fs-h2);      line-height: var(--lh-tight);   letter-spacing: var(--ls-h2); }
+.t-h3      { font-size: var(--fs-h3);      line-height: var(--lh-snug);    letter-spacing: var(--ls-h3); }
+.t-h4      { font-size: var(--fs-h4);      line-height: var(--lh-snug);    letter-spacing: var(--ls-h3); font-weight: 700; }
+
+.t-lead {
+  font-size: var(--fs-lead);
+  line-height: 1.42;
+  letter-spacing: -0.014em;
+  color: var(--fg-mute);
+  text-wrap: pretty;
+  max-width: 54ch;
+}
+
+.t-body { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--fg-mute); text-wrap: pretty; max-width: var(--maxw-text); }
+.t-small { font-size: var(--fs-small); line-height: 1.5; color: var(--fg-mute); }
+/* --fg-mute, not --fg-faint. .t-micro is 12px REAL TEXT — it carries the
+   comparison table's brand-attribution note (was 2.27:1) and the science
+   section's dosage line (2.82:1). Both are legally and factually load-bearing
+   on a supplement page comparing named competitors. The faint tier is for
+   hairlines and rules; it must never be the default colour of a type class. */
+.t-micro { font-size: var(--fs-micro); line-height: 1.45; color: var(--fg-mute); }
+
+/* --fg-mute, not --fg-faint: eyebrows are 11px body text for WCAG purposes and
+   need 4.5:1. At 0.34 alpha they measured 2.23:1 on bone and 2.84:1 on ink —
+   a page-wide failure across every eyebrow. --fg-mute lands at ~6.9:1. */
+.t-eyebrow {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+}
+
+.t-eyebrow::before {
+  content: '';
+  width: 1.75em;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+  flex: none;
+}
+
+.t-eyebrow--bare::before { display: none; }
+
+/* Tabular numerals for any metric/data display */
+.num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+
+.accent { color: var(--accent); }
+
+/* ---------- REVEAL MACHINERY ----------
+   GSAP drives these. CSS holds the "before" state so there is
+   never a flash of laid-out-but-unanimated content. */
+
+[data-reveal] { will-change: transform, opacity; }
+
+/* Line-mask reveal: each line sits inside an overflow-hidden shell.
+
+   Descender rescue: at display leading (--lh-display: 0.88) the line box is
+   SHORTER than the font's em box, so `overflow: hidden` shears the tails off
+   g / y / p / Q / j on every masked headline. We pad the mask's bottom so the
+   clip edge falls below the descenders, then pull the next line back up by the
+   same amount so visual leading is unchanged.
+
+   The padding sits inside the clip region, so the pre-reveal offset in
+   reveal.js (yPercent) must clear line height + this padding — that is why it
+   is 128 and not 100. Changing one without the other makes lines peek.
+
+   Tune it per-section with --mask-rescue ONLY. Never set padding-bottom or
+   margin-bottom on .line-mask directly: the two must always be equal and
+   opposite, and overriding one alone shears the glyphs. (The footer did
+   exactly this — padding 0.14em against margin -0.18em — and sheared the 'y'
+   and 'g' off its 137px wordmark.) */
+.line-mask {
+  --mask-rescue: 0.18em;
+  display: block;
+  overflow: hidden;
+  padding-bottom: var(--mask-rescue);
+  margin-bottom: calc(-1 * var(--mask-rescue));
+}
+.line-mask > span { display: block; will-change: transform; }
+
+/* Media that scales down as it enters (Polestar signature) */
+[data-media-reveal] { overflow: hidden; }
+[data-media-reveal] > img,
+[data-media-reveal] > video { will-change: transform; }
+
+.js [data-reveal='fade'],
+.js [data-reveal='rise'] { opacity: 0; }
+
+.js [data-reveal='rise'] { transform: translate3d(0, 2.2rem, 0); }
+
+/* Elements GSAP has taken ownership of get this class and CSS backs off */
+.gsap-managed { opacity: 1 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------- MEDIA ---------- */
+
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink-soft);
+}
+
+/* Seamless video loop host — two stacked layers crossfaded by seamlessLoop().
+   A bare `loop` attribute jump-cuts at the 5s mark on every generated clip. */
+.vloop {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+}
+.vloop__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: opacity;
+}
+
+/* Grain overlay — kills banding on gradients, adds filmic texture */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 6s steps(6) infinite;
+}
+
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  16% { transform: translate(-2%, 1%); }
+  33% { transform: translate(1%, -2%); }
+  50% { transform: translate(-1%, 2%); }
+  66% { transform: translate(2%, 1%); }
+  83% { transform: translate(1%, -1%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain::after { animation: none; }
+}
+
+/* ---------- UTILITIES ---------- */
+
+.u-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.u-hide-sm { }
+@media (max-width: 860px) { .u-hide-sm { display: none !important; } }
+@media (min-width: 861px) { .u-only-sm { display: none !important; } }

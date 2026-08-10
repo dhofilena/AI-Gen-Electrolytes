@@ -1,0 +1,390 @@
+﻿/* ============================================================
+   NAV â€” owned by the nav section agent.
+   Fixed chrome. Transparent over the hero, blurred ink once past it.
+   The CTA is the only filled element; everything else is quiet type.
+   Tokens only.
+
+   NOTE ON STACKING: `.nav` itself must never carry a transform or
+   will-change:transform â€” that would make it the containing block for
+   the fixed full-screen `.nav__panel`. All bar movement lives on
+   `.nav__shell`, which is a sibling of the panel.
+   ============================================================ */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+  color: var(--on-dark);
+}
+
+/* Hidden until the preloader hands off; JS adds .is-revealed. */
+.js .nav {
+  opacity: 0;
+  transition: opacity var(--d-mid) var(--e-out);
+}
+
+.js .nav.is-revealed,
+.no-js .nav {
+  opacity: 1;
+}
+
+/* ---------- bar ---------- */
+
+.nav__shell {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+}
+
+.nav__shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--ink-rgb), 0.74);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  border-bottom: var(--border-hair) solid var(--rule-dark);
+  opacity: 0;
+  transition: opacity var(--d-mid) var(--e-in-out);
+  pointer-events: none;
+}
+
+.nav.is-solid .nav__shell::before {
+  opacity: 1;
+}
+
+/* PERMANENT top scrim. The solid plate above only exists once the nav is past
+   the hero, so over the hero film the links had nothing behind them — measured
+   ~1.5:1 where they crossed bright plume, and 4.06:1 elsewhere. Both under AA.
+   A short top-down gradient gives every nav element a floor at all times
+   without putting a visible bar over the opening frame. It fades out as the
+   solid plate arrives so the two never stack into a heavy band. */
+.nav__shell::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 190%;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--ink-rgb), 0.72) 0%,
+    rgba(var(--ink-rgb), 0.44) 42%,
+    rgba(var(--ink-rgb), 0) 100%
+  );
+  opacity: 1;
+  transition: opacity var(--d-mid) var(--e-in-out);
+  pointer-events: none;
+}
+
+.nav.is-solid .nav__shell::after {
+  opacity: 0;
+}
+
+/* z-index MUST stay above the ::after scrim. `.nav__shell` is the stacking
+   context; the scrim pseudo-element and this bar are both z-index:auto, so
+   tree order decides and ::after wins — which painted the scrim OVER the CTA,
+   tinting the pill from #f1882c to ~#7f4b1f and dropping "Buy $32" to 2.28:1
+   on the page's primary action. Do not remove. */
+.nav__bar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s-5);
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: var(--s-4) var(--gutter);
+}
+
+/* ---------- wordmark ---------- */
+
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  justify-self: start;
+  min-width: 0;
+}
+
+.nav__wordmark {
+  font-size: var(--fs-h4);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h2);
+  color: var(--on-dark);
+  white-space: nowrap;
+}
+
+.nav__brandrule {
+  width: var(--border-hair);
+  height: 1.15em;
+  background: var(--rule-dark);
+  flex: none;
+}
+
+.nav__product {
+  font-size: var(--fs-micro);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--on-dark-mute);
+  white-space: nowrap;
+}
+
+@media (max-width: 1279px) {
+  .nav__brandrule,
+  .nav__product {
+    display: none;
+  }
+}
+
+/* ---------- section links ---------- */
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2.25rem);
+  justify-self: center;
+}
+
+.nav__link {
+  position: relative;
+  display: inline-block;
+  padding-block: var(--s-2);
+  font-size: var(--fs-small);
+  letter-spacing: var(--ls-body);
+  color: var(--on-dark);
+  white-space: nowrap;
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--border-hair);
+  background: currentColor;
+  opacity: 0.55;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--d-mid) var(--e-out);
+}
+
+.nav__link:hover {
+  color: var(--on-dark);
+}
+
+.nav__link.is-active {
+  color: var(--on-dark);
+}
+
+.nav__link.is-active::after {
+  transform: scaleX(1);
+}
+
+/* ---------- actions ---------- */
+
+.nav__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-4);
+  justify-self: end;
+}
+
+.nav__cta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-pill);
+  background: var(--dreamsicle);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--ls-body);
+  white-space: nowrap;
+  transition: transform var(--d-fast) var(--e-soft), opacity var(--d-fast) var(--e-soft);
+}
+
+.nav__cta:hover {
+  transform: translateY(-1px);
+}
+
+.nav__cta:active {
+  transform: translateY(0);
+}
+
+/* No opacity knock-back. At 0.62 the price measured 3.8:1 against the accent
+   fill â€” under AA for 15px text, on the page's primary call to action. The
+   price is the most consequential word in the nav; it renders at full ink. */
+.nav__cta-price {
+  opacity: 1;
+}
+
+/* ---------- menu button ---------- */
+
+.nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-6);
+  height: var(--s-6);
+  color: var(--on-dark);
+  flex: none;
+}
+
+.nav__toggle-bars {
+  position: relative;
+  display: block;
+  width: var(--s-5);
+  height: var(--s-5);
+}
+
+.nav__toggle-bars i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--border-hair);
+  background: currentColor;
+  transition: transform var(--d-fast) var(--e-in-out);
+}
+
+.nav__toggle-bars i:nth-child(1) {
+  top: calc(50% - var(--s-1));
+}
+
+.nav__toggle-bars i:nth-child(2) {
+  top: calc(50% + var(--s-1));
+}
+
+.nav.is-open .nav__toggle-bars i:nth-child(1) {
+  transform: translateY(var(--s-1)) rotate(45deg);
+}
+
+.nav.is-open .nav__toggle-bars i:nth-child(2) {
+  transform: translateY(calc(var(--s-1) * -1)) rotate(-45deg);
+}
+
+/* ---------- full-screen panel ---------- */
+
+.nav__panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-content: space-between;
+  gap: var(--s-7);
+  padding: var(--s-9) var(--gutter) calc(var(--s-7) + env(safe-area-inset-bottom, 0px));
+  background: var(--ink);
+  visibility: hidden;
+  pointer-events: none;
+  clip-path: inset(0% 0% 100% 0%);
+}
+
+.nav.is-open .nav__panel {
+  pointer-events: auto;
+}
+
+.nav__plist {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-2);
+}
+
+.nav__pitem {
+  overflow: hidden;
+}
+
+.nav__plink {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  padding-block: var(--s-2);
+  color: var(--on-dark);
+  will-change: transform;
+}
+
+.nav__pidx {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--on-dark-mute);
+  flex: none;
+}
+
+.nav__plabel {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-h2);
+}
+
+.nav__pfoot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-4);
+  padding-top: var(--s-5);
+  border-top: var(--border-hair) solid var(--rule-dark);
+  will-change: transform;
+}
+
+.nav__cta--block {
+  width: 100%;
+  justify-content: center;
+  padding-block: var(--s-4);
+  font-size: var(--fs-body);
+}
+
+.nav__pnote {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--on-dark-mute);
+}
+
+/* ---------- breakpoints ---------- */
+
+@media (max-width: 1024px) {
+  .nav__bar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .nav__links {
+    display: none;
+  }
+
+  .nav__toggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav__actions {
+    gap: var(--s-3);
+  }
+
+  .nav__cta {
+    padding: var(--s-2) var(--s-4);
+    font-size: var(--fs-micro);
+  }
+}
+
+/* Reduced motion: no curtain, no stagger â€” the panel is simply there. */
+@media (prefers-reduced-motion: reduce) {
+  .nav__panel {
+    clip-path: none;
+  }
+
+  .nav.is-open .nav__panel {
+    visibility: visible;
+  }
+}

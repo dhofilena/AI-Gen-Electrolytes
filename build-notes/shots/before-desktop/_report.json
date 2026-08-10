@@ -1,0 +1,14 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:5273",
+  "capturedAt": "2026-08-09T20:07:01.857Z",
+  "consoleErrors": [],
+  "horizontalOverflow": {
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "overflows": false
+  }
+}

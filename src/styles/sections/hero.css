@@ -1,0 +1,384 @@
+/* ============================================================
+   HERO — full-bleed dissolve film, one headline, one hanging
+   spec block. Owns .hero__*. Every value is a token or a measure.
+   ============================================================ */
+
+.hero {
+  padding-block: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: var(--ink);
+
+  /* ---- film framing ----
+     The clip is a symmetric plume dead-centre in a 16:9 frame. Left
+     as-is inside a 1.6 viewport it sits exactly where the headline
+     wants to be. These three values push the mass up and to the
+     right, opening the lower-left for the type; the scale only
+     exists to buy the vertical slack the crop does not have (a
+     16:9 source covers a 1.6 frame with zero height to spare).
+     Both offsets stay inside (S-1)/2S, so the frame never uncovers. */
+  --film-scale: 1.1;
+  --film-x: 2.6%;
+  --film-y: -3.5%;
+}
+
+/* ---------- THE FILM ---------- */
+
+.hero__frame {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-bg);
+  overflow: hidden;
+  background: var(--ink);
+}
+
+/* Transform target for the scrubbed exit. Scale always outruns the
+   vertical shift, so the frame never uncovers. */
+.hero__stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* Composition only. Kept separate from .hero__stage (GSAP owns that
+   on scroll) and from .hero__vloop (GSAP owns that on entry), so the
+   framing survives both animations. */
+.hero__film {
+  position: absolute;
+  inset: 0;
+  transform: scale(var(--film-scale)) translate(var(--film-x), var(--film-y));
+}
+
+/* Two stacked layers crossfaded by seamlessLoop(). */
+.hero__vloop {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* The plume's dark left flank is what the headline sits in, so keep
+   the source's left edge and let its right shoulder crop away. */
+.hero__vloop .vloop__layer {
+  object-position: 20% 50%;
+}
+
+.hero__grade,
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ---- the grade ----
+   Not a scrim bolted under the type: a key falloff whose bright
+   centre is set to where the plume actually sits after --film-x/y,
+   so the subject keeps its full value and only the corners the type
+   occupies are pulled down. The floor gradient is the second half of
+   the same idea — a lit subject standing in a dark room. */
+.hero__grade {
+  z-index: 2;
+  background:
+    radial-gradient(
+      78% 62% at 56% 34%,
+      rgba(var(--ink-rgb), 0) 0%,
+      rgba(var(--ink-rgb), 0.16) 50%,
+      rgba(var(--ink-rgb), 0.6) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(var(--ink-rgb), 0.66) 0%,
+      rgba(var(--ink-rgb), 0.4) 22%,
+      rgba(var(--ink-rgb), 0.11) 46%,
+      rgba(var(--ink-rgb), 0) 66%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(var(--ink-rgb), 0.46) 0%,
+      rgba(var(--ink-rgb), 0) 20%
+    );
+}
+
+/* Closes over the film on scroll-out. GSAP owns the opacity. */
+.hero__veil {
+  z-index: 4;
+  background: var(--ink);
+  opacity: 0;
+}
+
+/* .grain::after sits at z-index 3, between grade and veil. */
+
+/* ---------- TYPE ---------- */
+
+.hero__wrap {
+  position: relative;
+  z-index: var(--z-content);
+  width: 100%;
+}
+
+.hero__inner {
+  align-items: end;
+  padding-bottom: var(--s-10);
+  will-change: transform, opacity;
+}
+
+/* The measure is deliberate. 6.5ch clears the longest word ("whole.",
+   2.88em) and falls well short of the shortest pair ("Water, made",
+   5.38em), so the headline stacks one word per line at every width —
+   which is the point of the masked line reveal. Per-line optical
+   correction is applied in JS from the face's real side bearings. */
+.hero__head {
+  grid-column: 1 / span 7;
+  min-width: 0;
+  max-width: 6.5ch;
+  text-wrap: wrap;
+  color: var(--fg);
+}
+
+/* ---------- THE HANGING BLOCK ----------
+   Polestar's move: a hairline spanning the full column, everything
+   else hanging off it. Height and bottom padding are written by JS
+   from live font metrics so the rule lands on the cap-line of "made"
+   and the link's underline lands on the baseline of "whole.".
+   The fallbacks below are the same numbers in em (0.88 line pitch +
+   0.7105 cap height, 0.208 baseline drop) so the block is already
+   right on the first paint. */
+.hero__aside {
+  position: relative;
+  grid-column: 9 / span 4;
+  align-self: end;
+  min-width: 0;
+  /* min-height, not height: at cramped desktop widths the display
+     type shrinks faster than 14px body copy can, so the block would
+     otherwise overflow its own rule. Growing upward keeps the link's
+     underline on the baseline and only loosens the rule's tie to the
+     cap-line — a soft failure instead of a broken one. */
+  min-height: var(--hero-aside-h, calc(var(--fs-display) * 1.799));
+  padding-top: var(--s-4);
+  padding-bottom: var(--hero-aside-drop, calc(var(--fs-display) * 0.208));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.hero__rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--border-hair);
+  background: var(--rule);
+  transform-origin: 0 50%;
+}
+
+.js .hero__rule { transform: scaleX(0); }
+
+.hero__tag {
+  max-width: none;
+  text-wrap: nowrap;
+}
+
+/* Labels flush to the grid's column 9, values flush to its right
+   margin. Both edges of the block are justified by the rule above. */
+.hero__spec {
+  margin-top: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.hero__spec-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.hero__spec-k {
+  color: var(--fg-mute);
+}
+
+.hero__spec-v {
+  color: var(--fg);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hero__link {
+  position: relative;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg);
+}
+
+/* This rule IS the bottom edge of the block, and it sits on the
+   headline's last baseline. Same weight as .hero__rule at rest. */
+.hero__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--border-hair);
+  background: var(--rule);
+  transition: background-color var(--d-fast) var(--e-soft);
+}
+
+.hero__link:hover::after,
+.hero__link:focus-visible::after {
+  background: var(--fg);
+}
+
+.hero__link-arrow {
+  flex: none;
+  transition: transform var(--d-mid) var(--e-out);
+}
+
+.hero__link:hover .hero__link-arrow {
+  transform: translateY(20%);
+}
+
+/* Narrow desktop: --fs-display falls away faster than the body copy
+   clamp does, so the block's internal spacing tightens to keep it
+   inside the cap-line-to-baseline span. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .hero__aside {
+    padding-top: var(--s-3);
+  }
+
+  .hero__spec {
+    margin-top: var(--s-4);
+    gap: var(--s-1);
+  }
+}
+
+/* ---------- MOBILE / TABLET ---------- */
+
+@media (max-width: 860px) {
+  .hero__head,
+  .hero__aside {
+    grid-column: 1 / -1;
+  }
+
+  /* Stacked, not squeezed: the block's separation from the headline
+     is exactly one headline line-pitch, so the caption can never be
+     misread as a fourth line of the H1. row-gap is zeroed so that
+     margin is the only number in play. */
+  .hero__inner {
+    row-gap: 0;
+    padding-bottom: var(--s-9);
+  }
+
+  .hero__aside {
+    height: auto;
+    margin-top: calc(var(--fs-display) * var(--lh-display));
+    padding-top: var(--s-4);
+    padding-bottom: 0;
+  }
+
+  /* At full width the rule, the spec values and the link arrow all
+     land on the right gutter — nowhere near the headline's ragged
+     right edge, so there is no near-miss alignment left to read as
+     an error. */
+  .hero__tag {
+    text-wrap: pretty;
+    max-width: 30ch;
+  }
+
+  .hero__spec {
+    margin-top: var(--s-5);
+    gap: var(--s-3);
+  }
+
+  .hero__link {
+    margin-top: var(--s-7);
+    padding-bottom: var(--s-4);
+  }
+
+  /* ---- the film is a band, not a slit ----
+     Covering a 9:19.5 frame with a 16:9 source crops it to a 26%-wide
+     window: no plume, no silhouette, just moving texture. So on mobile
+     the film gets its own shorter box, which nearly doubles the visible
+     width of the source (26% -> ~45%) and gives the plume its shape
+     back. It ends on the aside's rule — JS writes --film-h from the
+     measured rule position — and the grade takes it to solid ink by
+     that same line, so the band has no edge, it just dissolves. */
+  .hero {
+    --film-scale: 1;
+    --film-x: 0%;
+    --film-y: 0%;
+    --film-h: 60%;
+  }
+
+  .hero__film {
+    inset: 0 0 auto 0;
+    height: var(--film-h);
+  }
+
+  .hero__vloop .vloop__layer {
+    object-position: 50% 50%;
+  }
+
+  .hero__grade {
+    background:
+      radial-gradient(
+        112% 40% at 50% 24%,
+        rgba(var(--ink-rgb), 0) 0%,
+        rgba(var(--ink-rgb), 0.16) 52%,
+        rgba(var(--ink-rgb), 0.62) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(var(--ink-rgb), 0) calc(var(--film-h) * 0.34),
+        rgba(var(--ink-rgb), 0.42) calc(var(--film-h) * 0.7),
+        rgba(var(--ink-rgb), 0.88) calc(var(--film-h) * 0.93),
+        rgb(var(--ink-rgb)) var(--film-h)
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(var(--ink-rgb), 0.5) 0%,
+        rgba(var(--ink-rgb), 0) 22%
+      );
+  }
+}
+
+/* At 390px the headline gets bigger, not smaller. */
+@media (max-width: 560px) {
+  .hero__head {
+    font-size: var(--fs-mega);
+    line-height: var(--lh-mega);
+    letter-spacing: var(--ls-mega);
+  }
+
+  .hero__aside {
+    margin-top: calc(var(--fs-mega) * var(--lh-mega));
+  }
+}
+
+/* Short landscape viewports: give the film back its air. */
+@media (max-height: 640px) and (min-width: 861px) {
+  .hero__inner {
+    padding-bottom: var(--s-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .hero__rule { transform: none; }
+}

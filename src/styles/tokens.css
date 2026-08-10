@@ -1,0 +1,223 @@
+/* ============================================================
+   ELECTROLYTE BREAKTHROUGH — DESIGN TOKENS
+   The single source of truth. Sections MUST consume these
+   variables and never hardcode a hex value or a font size.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Neue Haas Unica';
+  src: url('/fonts/NeueHaasUnicaPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Neue Haas Unica';
+  src: url('/fonts/NeueHaasUnicaPro-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* ---------- BRAND PALETTE (from Color Palette Style Guide) ---------- */
+  --berry: #921a4a;
+  --lemonade: #f9ed7f;
+  --tropical: #f89d72;
+  --island: #f9f3db;
+  --dreamsicle: #f1882c;
+
+  --berry-rgb: 146, 26, 74;
+  --lemonade-rgb: 249, 237, 127;
+  --tropical-rgb: 248, 157, 114;
+  --island-rgb: 249, 243, 219;
+  --dreamsicle-rgb: 241, 136, 44;
+
+  /* ---------- FOUNDATION ---------- */
+  /* Deep ink is the stage; the brand colors are the light on it. */
+  --ink: #0b0d12;
+  --ink-rgb: 11, 13, 18;
+  --ink-soft: #14171e;
+  --ink-veil: #1b1f27;
+  --paper: #ffffff;
+  --bone: var(--island);
+
+  /* Text on dark.
+     --*-mute is the lowest tier that may carry READABLE text: ~6.9:1.
+     --*-faint is DECORATIVE ONLY — index numerals, hairline labels, ornament.
+     It measures ~2.2–2.8:1 and fails WCAG AA. It must never be used for body
+     copy, product claims, prices, or the FDA disclaimer. (An audit found the
+     disclaimer and seven of eight structure/function claims sitting at 2.23:1
+     on the bone surface — regulated text has to be legible, not atmospheric.) */
+  --on-dark: #f4f1ea;
+  --on-dark-mute: rgba(244, 241, 234, 0.62);
+  --on-dark-faint: rgba(244, 241, 234, 0.34);
+  --rule-dark: rgba(244, 241, 234, 0.14);
+
+  /* Text on light */
+  --on-light: #0b0d12;
+  --on-light-mute: rgba(11, 13, 18, 0.60);
+  --on-light-faint: rgba(11, 13, 18, 0.34);
+  --rule-light: rgba(11, 13, 18, 0.12);
+
+  /* Semantic accent — retargeted per-section for flavor theming */
+  --accent: var(--dreamsicle);
+  --accent-rgb: var(--dreamsicle-rgb);
+  --accent-ink: var(--ink);
+
+  /* ---------- TYPE ---------- */
+  --font: 'Neue Haas Unica', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Fluid display scale. Tight leading + negative tracking = premium.
+     Reference: Polestar sets display type at ~0.88 leading, -0.03em tracking. */
+  /* 20vw floor, not 15.5: at 390px the old ramp bottomed out at 64px, which
+     is "large" but not the enormous-numeral effect the pillars/myth stats
+     depend on. Identical above ~1100px. */
+  --fs-mega: clamp(5rem, 20vw, 17rem);
+  /* Monumental NUMERALS on small screens. --fs-mega's floor has to stay low
+     enough that an 8-character word ("Lemonade") does not overflow a 390px
+     screen — but digits are far narrower than words, so a stat can go much
+     bigger. Use this for figures only, never for words. */
+  --fs-mega-sm: clamp(7rem, 34vw, 12rem);
+
+  --fs-display: clamp(3rem, 9.5vw, 11rem);
+  --fs-h1: clamp(2.5rem, 6.2vw, 6.5rem);
+  --fs-h2: clamp(2rem, 4.4vw, 4.25rem);
+  /* The gap between h2 (68px) and h3 (40px) was too wide to tune against —
+     sections were forced to h2 and lost their figure-to-label scale contrast. */
+  --fs-h2-sm: clamp(1.75rem, 3.3vw, 3.25rem);
+  --fs-h3: clamp(1.5rem, 2.4vw, 2.5rem);
+  --fs-h4: clamp(1.25rem, 1.6vw, 1.625rem);
+  --fs-lead: clamp(1.125rem, 1.55vw, 1.5rem);
+  --fs-body: clamp(1rem, 1.12vw, 1.125rem);
+  --fs-small: clamp(0.875rem, 0.95vw, 0.9375rem);
+  --fs-micro: 0.75rem;
+  --fs-eyebrow: 0.6875rem;
+
+  --lh-mega: 0.84;
+  --lh-display: 0.88;
+  --lh-tight: 0.95;
+  --lh-snug: 1.12;
+  --lh-body: 1.55;
+  --lh-loose: 1.7;
+
+  --ls-mega: -0.045em;
+  --ls-display: -0.038em;
+  --ls-h1: -0.032em;
+  --ls-h2: -0.026em;
+  --ls-h3: -0.02em;
+  --ls-body: -0.01em;
+  --ls-eyebrow: 0.16em;
+  --ls-caps: 0.08em;
+
+  /* ---------- SPACE ---------- */
+  --gutter: clamp(1.25rem, 4.2vw, 5.5rem);
+  --maxw: 1680px;
+  /* Width of the content column itself. Size grid-relative display type off
+     this so a numeral cannot outgrow its own row at large viewports. */
+  --content-row: calc(min(100vw, var(--maxw)) - 2 * var(--gutter));
+  --maxw-text: 62ch;
+  --sec-y: clamp(6rem, 13vh, 12rem);
+  --sec-y-lg: clamp(9rem, 20vh, 18rem);
+
+  /* ---------- SEAM RHYTHM ----------
+     The gap between two sections is a property of the BOUNDARY, not of
+     either section. Each side pays half, so a seam is two of these.
+     Before this existed every section had its own idea of a top margin
+     and the page's boundaries measured 189 / 200 / 257 / 259 / 263 /
+     286 / 324 / 332 / 360px — nine different answers to one question,
+     which reads as slack rather than as breathing room.
+
+     Three values, used deliberately:
+       --seam-tight  the argument CONTINUES across the boundary. Used at
+                     exactly two places (myth->science, proof->offer) plus
+                     the bone->white step inside the "what's in it" chapter.
+       --seam        the default. A change of subject, usually a surface flip.
+       --seam-open   a real chapter break. Used ONCE (science->pillars), where
+                     the page turns from why-it-matters to what-it-is.
+     Anything outside this set is a bug, not a decision. */
+  --seam-tight: clamp(3.5rem, 7.5vh, 6rem);
+  --seam: clamp(5.5rem, 11vh, 9rem);
+  --seam-open: clamp(8rem, 16vh, 13rem);
+
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+
+  /* ---------- MOTION ----------
+     Premium motion is SLOW, WEIGHTED, and never bouncy.
+     Every transition uses one of these curves. No `ease`, no `linear` on transforms. */
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);          /* expo out — the workhorse reveal */
+  --e-in-out: cubic-bezier(0.76, 0, 0.24, 1);      /* quint in-out — for state swaps */
+  --e-soft: cubic-bezier(0.33, 1, 0.68, 1);        /* cubic out — small UI */
+  --e-mask: cubic-bezier(0.77, 0, 0.175, 1);       /* curtain / clip reveals */
+
+  --d-fast: 0.34s;
+  --d-mid: 0.62s;
+  --d-slow: 1.05s;
+  --d-xslow: 1.6s;
+
+  /* ---------- SURFACE ---------- */
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+  --border-hair: 1px;
+
+  --shadow-lift: 0 1px 2px rgba(11, 13, 18, 0.04), 0 8px 24px rgba(11, 13, 18, 0.06);
+  --shadow-deep: 0 2px 8px rgba(11, 13, 18, 0.08), 0 24px 68px rgba(11, 13, 18, 0.14);
+
+  --z-bg: 0;
+  --z-content: 10;
+  --z-nav: 100;
+  --z-overlay: 200;
+  --z-preloader: 300;
+}
+
+/* Sections opt into a surface; never restate colors inline. */
+[data-surface='dark'] {
+  --fg: var(--on-dark);
+  --fg-mute: var(--on-dark-mute);
+  --fg-faint: var(--on-dark-faint);
+  --rule: var(--rule-dark);
+  --bg: var(--ink);
+}
+
+[data-surface='light'] {
+  --fg: var(--on-light);
+  --fg-mute: var(--on-light-mute);
+  --fg-faint: var(--on-light-faint);
+  --rule: var(--rule-light);
+  --bg: var(--paper);
+}
+
+[data-surface='bone'] {
+  --fg: var(--on-light);
+  --fg-mute: var(--on-light-mute);
+  --fg-faint: var(--on-light-faint);
+  --rule: rgba(11, 13, 18, 0.1);
+  --bg: var(--island);
+}
+
+/* Flavor theming — set data-flavor on any subtree to retarget --accent. */
+[data-flavor='lemonade'] { --accent: var(--lemonade); --accent-rgb: var(--lemonade-rgb); --accent-ink: var(--ink); }
+[data-flavor='tropical'] { --accent: var(--tropical); --accent-rgb: var(--tropical-rgb); --accent-ink: var(--ink); }
+[data-flavor='berry']    { --accent: var(--berry);    --accent-rgb: var(--berry-rgb);    --accent-ink: var(--on-dark); }
+[data-flavor='dreamsicle'] { --accent: var(--dreamsicle); --accent-rgb: var(--dreamsicle-rgb); --accent-ink: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-fast: 0.01ms;
+    --d-mid: 0.01ms;
+    --d-slow: 0.01ms;
+    --d-xslow: 0.01ms;
+  }
+}

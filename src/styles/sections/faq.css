@@ -1,0 +1,301 @@
+/* ============================================================
+   FAQ — light surface. Sticky index column + hairline accordion.
+   Tokens only. No hardcoded colour, size, easing or duration.
+   ============================================================ */
+
+.faq {
+  --faq-idx: var(--s-7);          /* index gutter, aligns answers to questions */
+  --faq-gap: clamp(var(--s-6), 5vw, var(--s-9));
+  --faq-row-y: clamp(var(--s-6), 2.8vw, var(--s-8));
+  /* Seam rhythm (tokens.css) — one value on both edges. The last row should
+     meet the footer's full-bleed black cut without a slack band of white in
+     front of it. */
+  padding-top: var(--seam);
+  padding-bottom: var(--seam);
+}
+
+.faq__wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  column-gap: var(--faq-gap);
+}
+
+/* ---------- intro column ---------- */
+
+/* A sticky grid item travels inside its grid *area*, so the box itself must
+   stay content-sized — a stretched item fills the area and cannot move. */
+/* min-height is a floor, not `stretch`: the column becomes a full-height
+   editorial rail with the hint anchored at its foot, instead of a headline
+   stranded above ~600px of dead white. It keeps ~400px of sticky travel. */
+.faq__intro {
+  position: sticky;
+  top: clamp(var(--s-7), 12vh, var(--s-9));
+  height: max-content;
+  min-height: min(62vh, 34rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.faq__eyebrow { margin-bottom: var(--s-6); }
+
+.faq .faq__head { text-wrap: initial; }
+
+/* NOTE — descender rescue.
+   Do NOT reintroduce a padding-bottom / margin-bottom / line-height override
+   for .faq__head .line-mask here. base.css derives the mask's padding and its
+   compensating negative margin from a single --mask-rescue property so the two
+   can never diverge; a local padding of 0.14em against base's -0.18em margin
+   pulls the clip edge up through the tail of the 'Q'. If this headline ever
+   needs a deeper rescue, set --mask-rescue alone. */
+
+.faq__lede {
+  margin-top: var(--s-7);
+  font-size: var(--fs-lead);
+  line-height: 1.42;
+  letter-spacing: -0.014em;
+  color: var(--fg-mute);
+  max-width: 26ch;
+  text-wrap: pretty;
+}
+
+/* The counter is a position indicator, not a decoration: the track fills to
+   the open row. Its resting state reads "06 · Questions" — a fact — instead
+   of the "00 —— 06" placeholder it used to show with nothing open. */
+.faq__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: var(--s-8);
+  max-width: 26rem;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+/* --fg, not --accent. Dreamsicle on white measures 2.53:1 — the accent is a
+   dark-surface colour and cannot carry small text on this section's white
+   ground. "Current" still reads from weight and position; the accent survives
+   in the fill track beside it, where it is ornament rather than text. */
+.faq__meta-cur {
+  flex: none;
+  color: var(--fg);
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+.faq__meta-label { flex: none; }
+
+.faq__meta-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: var(--s-7);
+  height: var(--border-hair);
+  background: var(--rule);
+}
+
+.faq__meta-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+/* margin-top: auto sits it at the foot of the rail (see .faq__intro). */
+.faq__hint {
+  margin-top: auto;
+  padding-top: var(--s-6);
+  border-top: var(--border-hair) solid var(--rule);
+  max-width: 26rem;
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+  color: var(--fg-mute);
+}
+
+/* Advice a touch device cannot take. Dropped where there is no keyboard to
+   speak of — coarse pointer, no hover, or a phone-width viewport. The
+   behaviour itself is untouched; only the sentence about it goes. */
+@media (hover: none), (pointer: coarse), (max-width: 860px) {
+  .faq__hint-keys { display: none; }
+}
+
+/* ---------- list ---------- */
+
+.faq__col { position: relative; }
+
+.faq__item { position: relative; }
+
+.faq__rule {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: var(--border-hair);
+  background: var(--rule);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+.faq__rule--end { position: relative; }
+
+/* ---------- question ---------- */
+
+.faq__h { font-weight: 400; }
+
+.faq__q {
+  display: grid;
+  grid-template-columns: var(--faq-idx) minmax(0, 1fr) var(--s-5);
+  align-items: baseline;
+  column-gap: var(--s-4);
+  width: 100%;
+  text-align: left;
+  padding-block: var(--faq-row-y);
+  padding-inline: 0;
+}
+
+/* --fg-mute, not --fg-faint: this is 11px text and the faint tier measures
+   2.2:1 on white — a straight WCAG failure and, at this size, close to
+   invisible. */
+.faq__idx {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--fg-mute);
+  transition: color var(--d-mid) var(--e-soft);
+}
+
+.faq__qt {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-h3);
+  font-weight: 700;
+  color: var(--fg);
+  text-wrap: pretty;
+  max-width: 30ch;   /* holds every question to two lines at display scale */
+  transition: opacity var(--d-mid) var(--e-soft);
+}
+
+/* ---------- the mark: a hairline cross that turns into a rule ---------- */
+
+/* --fg-faint put the closed '+' at 0.34 alpha / 2.2:1 on white. At 1440 the
+   accordion simply did not announce that it was interactive. --fg-mute is
+   ~5:1 and reads as an affordance without shouting. */
+.faq__mark {
+  position: relative;
+  display: block;
+  width: var(--s-5);
+  height: var(--s-5);
+  justify-self: end;
+  color: var(--fg-mute);
+  transform: rotate(0deg);
+  transition:
+    transform var(--d-mid) var(--e-in-out),
+    color var(--d-mid) var(--e-soft);
+}
+
+.faq__bar {
+  position: absolute;
+  background: currentColor;
+  transition: transform var(--d-mid) var(--e-in-out);
+}
+
+.faq__bar--h {
+  inset-inline: 0;
+  top: 50%;
+  height: var(--border-hair);
+  transform: translateY(-50%);
+}
+
+.faq__bar--v {
+  inset-block: 0;
+  left: 50%;
+  width: var(--border-hair);
+  transform: translateX(-50%) scaleY(1);
+}
+
+/* 180deg, not 90deg. The open state collapses the VERTICAL bar, so a 90deg
+   turn stood the surviving horizontal bar on its end and an open row rendered
+   as '|' instead of '—'. A half-turn still reads as a rotation on the way
+   through and lands the remaining hairline flat. */
+.faq__item[data-open='true'] .faq__mark { transform: rotate(180deg); color: var(--fg); }
+.faq__item[data-open='true'] .faq__bar--v { transform: translateX(-50%) scaleY(0); }
+.faq__item[data-open='true'] .faq__idx { color: var(--accent); }
+
+@media (hover: hover) {
+  .faq__q:hover .faq__mark { color: var(--fg); }
+  .faq__q:hover .faq__idx { color: var(--fg-mute); }
+  .faq__q:hover .faq__qt { opacity: 0.62; }
+  .faq__item[data-open='true'] .faq__q:hover .faq__qt { opacity: 1; }
+}
+
+.faq__q:focus-visible { outline-offset: -2px; }
+
+/* ---------- panel ---------- */
+
+.faq__panel {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.faq__panel-in {
+  padding-left: calc(var(--faq-idx) + var(--s-4));
+  padding-right: calc(var(--s-5) + var(--s-4));
+  padding-bottom: var(--faq-row-y);
+}
+
+.faq__a {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg-mute);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+
+/* ---------- mobile: 390px is a real design, not a fallback ---------- */
+
+@media (max-width: 860px) {
+  .faq {
+    --faq-idx: var(--s-6);
+    --faq-row-y: clamp(var(--s-6), 5.5vw, var(--s-7));
+    padding-top: var(--seam);
+    padding-bottom: var(--seam);
+  }
+
+  .faq__wrap { grid-template-columns: minmax(0, 1fr); }
+
+  /* The rail idea only exists beside the list; stacked it is just a header. */
+  .faq__intro {
+    position: static;
+    display: block;
+    min-height: 0;
+    margin-bottom: clamp(var(--s-7), 8vw, var(--s-8));
+  }
+
+  .faq__lede { max-width: 34ch; margin-top: var(--s-6); }
+
+  .faq__hint { margin-top: var(--s-6); }
+
+  .faq__meta,
+  .faq__hint { max-width: none; }
+
+  .faq__meta { margin-top: var(--s-6); }
+
+  .faq__q {
+    grid-template-columns: var(--faq-idx) minmax(0, 1fr) var(--s-5);
+    column-gap: var(--s-3);
+  }
+
+  .faq__qt { max-width: none; }
+
+  .faq__panel-in {
+    padding-left: calc(var(--faq-idx) + var(--s-3));
+    padding-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq__rule { transform: none !important; }
+}

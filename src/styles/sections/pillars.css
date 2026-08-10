@@ -1,0 +1,319 @@
+/* ============================================================
+   PILLARS — bone surface. Rules, space and scale only.
+   No cards, no borders, no radii, no boxes.
+
+   The whole section is one drawn field: two vertical accent
+   axes at the column edges, three full-measure hairlines, and
+   four magnitudes hung off the axes. Column gap is ZERO so the
+   hairlines run edge to edge without a break; the separation
+   between columns is made by the axis itself plus padding.
+   ============================================================ */
+
+.pillars {
+  /* Seam rhythm (tokens.css). --seam-open above: this is the page's one real
+     chapter break — three dark argument sections end and the bone palate
+     cleanser begins. --seam-tight below: pillars and formula are one chapter
+     ("what is in it"), so the bone->white step is a tonal change of gear, not
+     a new subject, and must not read as an accidental canyon. */
+  padding-block: var(--seam-open) var(--seam-tight);
+  overflow: clip;
+}
+
+/* ---------- header ---------- */
+
+.pil__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-5);
+  margin-bottom: clamp(var(--s-7), 9vh, var(--s-9));
+}
+
+.pil__tally {
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  white-space: nowrap;
+}
+
+/* ---------- the field ---------- */
+
+.pil__ledger {
+  position: relative;
+  /* Column gutter, applied as inner padding on the right-hand column so the
+     hairlines stay continuous across the full measure. */
+  --pil-gutter: clamp(var(--s-5), 2.8vw, var(--s-7));
+}
+
+/* The opening rule of the field. */
+.pil__open {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--border-hair);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pil__open i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--rule);
+  transform-origin: 0% 50%;
+}
+
+/* Brand colour used like light: two hairlines, nothing more.
+   Every figure in the field terminates on one of them. */
+.pil__axis {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--border-hair);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pil__axis--a { left: 50%; margin-left: calc(-1 * var(--border-hair)); }
+.pil__axis--b { right: 0; }
+
+.pil__axis i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: 50% 0%;
+}
+
+/* 2 x 2, zero column gap: the rules are continuous, the axis divides. */
+.pil__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0;
+}
+
+.pil__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: clamp(var(--s-3), 1.6vh, var(--s-5));
+  padding-block: clamp(var(--s-6), 5vh, var(--s-8));
+  align-content: start;
+}
+
+/* The right-hand column is inset from the axis; the left-hand column runs
+   flush to it, so both sets of figures land on a drawn line. */
+.pil__row:nth-child(even) { padding-left: var(--pil-gutter); }
+.pil__row:nth-child(odd)  { padding-right: 0; }
+
+.pil__idx {
+  justify-self: start;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--fg-mute);
+  line-height: 1;
+}
+
+/* The figures hang off the axis. */
+.pil__figure {
+  justify-self: end;
+  text-align: right;
+  margin-top: clamp(var(--s-2), 1.4vh, var(--s-4));
+}
+
+.pil__mask {
+  display: block;
+  overflow: hidden;
+  /* protect cap-height / baseline from the sub-1 leading, at no layout cost */
+  padding-block: 0.11em;
+  margin-block: -0.11em;
+}
+
+.pil__n {
+  display: inline-block;
+  font-size: var(--fs-mega);
+  line-height: var(--lh-mega);
+  letter-spacing: var(--ls-mega);
+  font-weight: 700;
+  will-change: transform;
+  /* No optical nudge: --ls-mega already pulls the trailing advance in by
+     0.045em, which lands the ink edge of the last digit on the axis. Any
+     margin here and the figures visibly float off the line. */
+}
+
+/* The name sits flush on the opposite edge — the pair spans the cell. */
+.pil__label {
+  justify-self: start;
+  max-width: 16ch;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-h2);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+/* The detail hangs off the same axis as the figure it belongs to.
+   CLEARANCE — read before removing the padding. The figure is display type
+   whose trailing advance (--ls-mega pulls it in 0.045em) lands its INK on the
+   axis; that is the point of the section. The caption is 15px body text, whose
+   trailing advance is under a pixel, so a flush box put the terminal glyph of
+   "chloride" / "taurate" / "manganese" / "complex" ON the 1px accent rule —
+   measured right edge 370.0px against an axis spanning 369→370 at 390px wide,
+   and at 2x DPR that rule is saturated orange under grey type. The BOX still
+   ends on the axis (the block is still hung off it); the padding insets only
+   the ink, so the alignment idea survives and the collision does not. */
+.pil__sub {
+  justify-self: end;
+  text-align: right;
+  max-width: 42ch;
+  margin-top: clamp(var(--s-2), 1.2vh, var(--s-3));
+  padding-right: var(--s-3);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  letter-spacing: var(--ls-body);
+  color: var(--fg-mute);
+  text-wrap: pretty;
+}
+
+.pil__rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--border-hair);
+  background: var(--rule);
+  transform-origin: 0% 50%;
+}
+
+/* ---------- the counterweight: what is absent ----------
+   Same instrument inverted. The field runs down and hangs right;
+   this runs across and reads left. One band, bracketed top and
+   bottom, no interior cells — figure and word share a baseline. */
+
+.pil__absent {
+  margin-top: clamp(var(--s-8), 12vh, var(--s-10));
+}
+
+.pil__absentEyebrow {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+.pil__zeroes {
+  margin-top: var(--s-5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: clamp(var(--s-5), 2.4vw, var(--s-7));
+  row-gap: var(--s-6);
+  padding-block: clamp(var(--s-5), 3.4vh, var(--s-7));
+  border-top: var(--border-hair) solid var(--rule);
+  border-bottom: var(--border-hair) solid var(--rule);
+}
+
+.pil__zero {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.pil__zk {
+  font-size: var(--fs-h1);
+  line-height: 1;
+  letter-spacing: var(--ls-h1);
+  font-weight: 700;
+}
+
+.pil__zv {
+  font-size: var(--fs-h4);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-h3);
+  color: var(--fg-mute);
+  max-width: 14ch;
+}
+
+/* ---------- tablet ---------- */
+
+@media (max-width: 1080px) {
+  .pil__label { max-width: 13ch; }
+  .pil__sub { max-width: 34ch; }
+  .pil__zv { font-size: var(--fs-lead); }
+}
+
+/* ---------- phone: one column, the same idea at phone scale ----------
+   The axis moves to the right margin and stays drawn; the figure still
+   hangs off it, the detail still hangs off it, the name still sits flush
+   left. Scale contrast is held at ~4:1 (figure : name) so the two
+   viewports express one idea rather than two. --fs-mega bottoms out at
+   5rem on a 390px screen, which is not the magnitude this section is
+   about, so the figure is derived from the token rather than restated.
+   (Requested token: a phone floor for --fs-mega — see report.) */
+
+@media (max-width: 860px) {
+  .pillars {
+    /* Same seam rhythm as desktop — see the root rule. */
+    padding-block: var(--seam-open) var(--seam-tight);
+  }
+
+  .pil__head {
+    margin-bottom: clamp(var(--s-6), 6vh, var(--s-8));
+  }
+
+  .pil__rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pil__row:nth-child(even) { padding-left: 0; }
+
+  .pil__row {
+    padding-block: clamp(var(--s-5), 4vh, var(--s-7));
+    row-gap: var(--s-3);
+  }
+
+  .pil__axis--a { display: none; }
+
+  .pil__n {
+    font-size: calc(var(--fs-mega) * 1.6);
+  }
+
+  .pil__label {
+    max-width: 15ch;
+    font-size: var(--fs-h2);
+  }
+
+  .pil__sub {
+    max-width: 30ch;
+    font-size: var(--fs-small);
+  }
+
+  .pil__zeroes {
+    flex-direction: column;
+    row-gap: 0;
+    padding-block: 0;
+  }
+
+  .pil__zero {
+    justify-content: space-between;
+    width: 100%;
+    padding-block: clamp(var(--s-4), 2.2vh, var(--s-5));
+  }
+
+  .pil__zero + .pil__zero {
+    border-top: var(--border-hair) solid var(--rule);
+  }
+
+  .pil__zv {
+    font-size: var(--fs-h4);
+    text-align: right;
+    max-width: 18ch;
+  }
+}
+
+@media (max-width: 480px) {
+  .pil__tally { display: none; }
+}
