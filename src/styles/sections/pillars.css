@@ -60,6 +60,10 @@
      minerals") ends 96px clear of the dividing accent rule, and the longest in
      the right column ("Forms of magnesium") 71px clear of the field edge. */
   --pil-gutter: clamp(var(--s-6), 3.4vw, var(--s-8));
+  /* Clearance between the accent axis and the start of every text run in the
+     cell. Applies at both viewports — on mobile the axis is the same leading
+     edge, so the type was touching it there too. */
+  --pil-lead-gap: clamp(var(--s-4), 1.7vw, var(--s-6));
   /* One name for the figure's size, because two things need it: the type
      itself, and the optical lead-in that has to be measured in the same
      units. Phone swaps the token underneath; nothing else changes. */
@@ -130,7 +134,12 @@
   grid-template-columns: minmax(0, 1fr);
   row-gap: 0;
   padding-block: clamp(var(--s-6), 5vh, var(--s-8));
-  /* Trailing inset only — the leading edge IS the axis. */
+  /* LEADING inset as well as trailing. The runs used to start with their ink
+     exactly on the axis — optically precise, but it reads as type touching the
+     rule rather than hanging off it. The negative optical lead-ins below are
+     relative to this content edge, so they still land all four runs on one
+     line; the whole spine simply sits --pil-lead-gap clear of the rule. */
+  padding-left: var(--pil-lead-gap);
   padding-right: var(--pil-gutter);
   align-content: start;
 }

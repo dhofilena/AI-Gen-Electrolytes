@@ -218,9 +218,39 @@
   font-weight: 700;
 }
 
+/* INK RESCUE — the same class of bug base.css solves for .line-mask, at ten
+   times the size, and on two axes rather than one. `overflow: hidden` clips the
+   BOX, but at this scale the glyphs paint outside their box twice over:
+
+     vertically    --lh-mega is 0.84, so the line box is ~16% shorter than the
+                   em box and the baseline of the numeral sits ~6px below the
+                   block's bottom edge at 835px. A flat shave off the base of
+                   the 98 — small in px, unmissable on a 590px numeral.
+     horizontally  --ls-mega is -0.045em and letter-spacing is applied after the
+                   LAST character too, so the trailing "%" gets ~0.026em of its
+                   own ink cut off its right side. This is the one you see
+                   first, because it lands on the accent glyph.
+
+   Pad the clip region past the ink on both axes and pull the same amount back
+   as margin, so nothing in the composition moves: the lockup grid is
+   `minmax(0, max-content)`, so an uncancelled pad would also drag
+   .myth__statlabel (justify-self: end) off the numeral's right edge.
+
+   Both are em, which resolves against --myth-mega here, so the rescue tracks
+   the numeral at every viewport instead of being tuned for one.
+
+   Verify with tools/probe-myth-ink.mjs — it measures painted pixels, not boxes,
+   so it sees this. A box-geometry probe reports "fits" and is useless here.
+   The reveal offset in myth.js must clear the block padding; see the note there. */
 .myth__stat-mask {
+  --myth-ink-rescue: 0.12em;
+  --myth-ink-rescue-x: 0.05em;
   display: block;
   overflow: hidden;
+  padding-block: var(--myth-ink-rescue);
+  margin-block: calc(-1 * var(--myth-ink-rescue));
+  padding-inline-end: var(--myth-ink-rescue-x);
+  margin-inline-end: calc(-1 * var(--myth-ink-rescue-x));
 }
 
 .myth__stat-in {

@@ -217,7 +217,11 @@ export default function mount(root) {
       /* 1.4, not 2.0: this lands the lockup at 7.7 so the odometer window
          (COUNT_FROM above) can open immediately after, instead of leaving
          a resolved "00%" sitting in the frame. */
-      .fromTo(statInEl, { yPercent: 118 }, { yPercent: 0, duration: 1.4 }, 6.3)
+      /* 140, not 118: .myth__stat-mask now carries 0.12em of vertical padding
+         so the clip edge sits outside the glyph ink (see myth.css). That
+         padding is inside the clip region, so the hidden offset has to clear
+         the line box AND the padding or the lockup peeks below the rule. */
+      .fromTo(statInEl, { yPercent: 140 }, { yPercent: 0, duration: 1.4 }, 6.3)
       /* THIRD MOVEMENT (0.78 -> 1.0): the ground comes back up under the
          monument, the accent blooms, the digits resolve on the scrub and
          the label writes in beside them. */
@@ -245,7 +249,9 @@ export default function mount(root) {
       );
       gsap.fromTo(
         statInEl,
-        { yPercent: 118 },
+        /* 140 for the same reason as the pinned branch above — the mask's
+           block padding is inside its own clip region. */
+        { yPercent: 140 },
         {
           yPercent: 0,
           duration: DUR.slow,
