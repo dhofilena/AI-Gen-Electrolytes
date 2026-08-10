@@ -20,3 +20,21 @@ Thumbs.db
 
 # OS
 Desktop.ini
+
+# ---- added after the build ----
+# Capture-harness output: 657 screenshots (~350MB), regenerated any time by
+# `node tools/shoot.mjs`. The written notes in build-notes/ stay tracked.
+build-notes/shots/
+build-notes/*-check.png
+build-notes/*-contact.png
+build-notes/*-crop.png
+build-notes/sheet-*.png
+build-notes/new-media.png
+
+# Installed Higgsfield skills. Restore with: npx skills add higgsfield-ai/skills
+# .claude/skills/* are symlinks into .agents/, so the two travel together.
+.agents/
+.claude/skills/
+
+# Build-tool artifact, rewritten every 2.5s by tools/progress.mjs --watch
+public/progress.json
