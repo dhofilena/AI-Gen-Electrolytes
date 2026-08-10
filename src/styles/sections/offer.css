@@ -151,18 +151,21 @@
    share the foot of the frame, on the scrim that is already there —
    no card, no pill, no border. */
 
+/* Stacked, not side-by-side. The picker now carries a label and three plated
+   tiles; sharing one row with the caption squeezed both and pushed the tiles
+   into the pack shot. Caption above, picker on its own full-width row below,
+   so the control strip reads as a control strip. */
 .offer__foot {
   position: absolute;
   z-index: 4;
   left: 0;
   right: 0;
   bottom: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--s-5);
+  display: grid;
+  gap: var(--s-4);
   padding: var(--s-6);
   color: var(--on-dark);
+  isolation: isolate; /* so ::before can sit behind the content at z-index -1 */
 }
 
 .offer__cap {
@@ -179,56 +182,291 @@
   letter-spacing: var(--ls-caps);
 }
 
-.offer__pick {
+/* ---------- gallery ---------- */
+
+.offer__gallery { position: absolute; inset: 0; }
+
+.offer__slides {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  touch-action: pan-y; /* let the page scroll; we only claim horizontal drags */
+}
+
+.offer__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--d-mid) var(--e-in-out), visibility 0s linear var(--d-mid);
+}
+
+.offer__slide.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--d-mid) var(--e-in-out), visibility 0s;
+}
+
+/* The brand slides are flat artwork with their own type baked in — they must
+   not be cropped, and the frame's wash/scrim would fight their own contrast. */
+/* Contain, and reserve the foot's height as padding so the artwork sits ABOVE
+   the caption / thumb rail / flavour tiles rather than behind them. Letting it
+   run full-bleed hid the bottom of the Supplement Facts panel — the three
+   claim lines and the mark — under the controls. */
+.offer__still {
+  object-fit: contain;
+  background: var(--ink-soft);
+  padding: var(--s-5) var(--s-5) clamp(9.5rem, 26%, 13rem);
+}
+
+/* The brand slides carry their own type and their own light backgrounds, so the
+   flavour wash and the full-frame scrim come off — tinting them would fight
+   artwork we do not own. But the foot UI (caption, thumb rail, flavour tiles)
+   is light-on-dark and sat white-on-white over the Supplement Facts panel.
+   Give the foot its own bottom-anchored plate instead: the artwork stays
+   untouched above it, the controls stay legible on it. */
+.offer__media.is-still .offer__wash,
+.offer__media.is-still .offer__scrim { opacity: 0; }
+
+.offer__foot::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 132%;
+  z-index: -1;
+  opacity: 0;
+  background: linear-gradient(
+    to top,
+    rgba(var(--ink-rgb), 0.94) 0%,
+    rgba(var(--ink-rgb), 0.88) 46%,
+    rgba(var(--ink-rgb), 0) 100%
+  );
+  transition: opacity var(--d-mid) var(--e-in-out);
+  pointer-events: none;
+}
+
+.offer__media.is-still .offer__foot::before { opacity: 1; }
+
+.offer__media .offer__wash,
+.offer__media .offer__scrim { transition: opacity var(--d-mid) var(--e-in-out); }
+
+.offer__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-pill);
+  background: rgba(var(--ink-rgb), 0.62);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--on-dark);
+  transition: background var(--d-fast) var(--e-soft), box-shadow var(--d-fast) var(--e-soft);
+}
+
+.offer__arrow:hover {
+  background: rgba(var(--ink-rgb), 0.85);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.58);
+}
+
+.offer__arrow--prev { left: var(--s-4); }
+.offer__arrow--next { right: var(--s-4); }
+
+/* Chevron drawn from two rules — no icon set. */
+.offer__chev {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+.offer__arrow--next .offer__chev { rotate: 45deg; translate: -2px 0; }
+.offer__arrow--prev .offer__chev { rotate: -135deg; translate: 2px 0; }
+
+/* One row, never wrapping. Six wrapping labels climbed up over the pack shot;
+   they scroll horizontally instead, which is also the right behaviour on a
+   phone. Labels stay on one line each so the rail height is stable. */
+.offer__thumbs {
   display: flex;
-  align-items: center;
-  gap: var(--s-5);
+  gap: var(--s-4);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: var(--s-1);
+  scroll-snap-type: x proximity;
+  /* Fade the trailing edge so a label cut by the frame reads as "more to
+     scroll" rather than as a clipping bug. */
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3rem), transparent 100%);
+}
+
+.offer__thumbs::-webkit-scrollbar { display: none; }
+
+.offer__thumb {
+  display: grid;
+  gap: var(--s-2);
+  padding-block: var(--s-2);
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  color: var(--on-dark-mute);
+  text-align: left;
+  transition: color var(--d-fast) var(--e-soft);
+}
+
+.offer__thumb .offer__thumblabel {
+  white-space: nowrap;
+}
+
+.offer__thumbbar {
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: rgba(244, 241, 234, 0.26);
+  transition: background var(--d-fast) var(--e-soft);
+}
+
+.offer__thumblabel {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.offer__thumb:hover { color: var(--on-dark); }
+.offer__thumb:hover .offer__thumbbar { background: rgba(244, 241, 234, 0.5); }
+.offer__thumb.is-on { color: var(--on-dark); }
+.offer__thumb.is-on .offer__thumbbar { background: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .offer__slide { transition: none; }
+}
+
+/* PACKET MODE — the frame is showing the supplied transparent cut-out rather
+   than a composed hero render. `cover` would slice the packaging, so contain
+   it, give it room, and light it: a soft radial pool in the flavour's own
+   accent behind the packet, plus a grounded drop shadow so it sits in the
+   frame instead of floating on top of it. */
+.offer__media.is-packet .offer__shot {
+  object-fit: contain;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2.5rem) clamp(5.5rem, 12vh, 8rem);
+  filter: drop-shadow(0 24px 42px rgba(11, 13, 18, 0.62));
+}
+
+.offer__media.is-packet .offer__inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    58% 46% at 50% 42%,
+    rgba(var(--accent-rgb), 0.34) 0%,
+    rgba(var(--accent-rgb), 0.12) 45%,
+    rgba(var(--ink-rgb), 0) 78%
+  );
+  transition: background var(--d-mid) var(--e-in-out);
+  pointer-events: none;
+}
+
+/* The flavour picker used to be three 0.5rem dots with a hairline underline,
+   sitting directly on the pack shot. It read as a caption, not a control —
+   nothing announced it was selectable. It is now a labelled row of plated
+   tiles: each carries its own ink plate so contrast does not depend on what
+   is behind it, a hairline border so it reads as a button, and a colour chip
+   large enough to see. Square corners and hairlines keep it in the page's
+   language — this is deliberately not a pill row. */
+.offer__pick {
+  display: grid;
+  gap: var(--s-3);
   flex: none;
+}
+
+.offer__picklabel {
+  color: var(--on-dark-mute);
+}
+
+.offer__picklist {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-2);
+  flex-wrap: wrap;
 }
 
 .offer__swatch {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--s-2);
-  padding-bottom: var(--s-2);
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-hair) solid rgba(var(--ink-rgb), 0);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.28);
+  background: rgba(var(--ink-rgb), 0.62);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
   cursor: pointer;
   font-size: var(--fs-small);
   color: var(--on-dark-mute);
   white-space: nowrap;
-  transition: color var(--d-fast) var(--e-soft);
+  transition:
+    color var(--d-fast) var(--e-soft),
+    background var(--d-fast) var(--e-soft),
+    box-shadow var(--d-fast) var(--e-soft);
 }
 
+/* Selected marker: a 2px accent rule seated inside the tile's rounded bottom
+   edge. Inset horizontally and given the same corner radius so it follows the
+   curve instead of poking out of it. */
 .offer__swatch::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--s-3);
+  right: var(--s-3);
   bottom: 0;
-  height: var(--border-hair);
-  background: currentColor;
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
   transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--d-fast) var(--e-out);
+  transform-origin: center;
+  transition: transform var(--d-mid) var(--e-out);
 }
 
-.offer__swatch:hover { color: var(--on-dark); }
+.offer__swatch:hover {
+  color: var(--on-dark);
+  background: rgba(var(--ink-rgb), 0.78);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.58);
+}
 
-.offer__swatch.is-on { color: var(--on-dark); }
+.offer__swatch.is-on {
+  color: var(--on-dark);
+  background: rgba(var(--ink-rgb), 0.88);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(var(--accent-rgb), 0.85);
+}
+
 .offer__swatch.is-on::after { transform: scaleX(1); }
+.offer__swatch.is-on .offer__swatchname { font-weight: 700; }
 
 .offer__swatch:has(:focus-visible) {
   outline: 2px solid var(--accent);
-  outline-offset: 4px;
+  outline-offset: 3px;
+  border-radius: var(--r-md);
 }
 
+/* Circular chip. The original 0.5rem dot read as punctuation; at 0.9rem it
+   reads as a colour sample of the flavour it selects. */
 .offer__dot {
   flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.9rem;
+  height: 0.9rem;
   border-radius: var(--r-pill);
   background: var(--accent);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(11, 13, 18, 0.32);
+  transition: transform var(--d-fast) var(--e-out);
 }
+
+.offer__swatch.is-on .offer__dot { transform: scale(1.12); }
 
 /* ---------- price ---------- */
 
@@ -569,11 +807,13 @@
 
   .offer__cap { gap: 0; }
 
-  .offer__pick {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--s-5);
-  }
+  /* .offer__pick is a grid (label over list) — do not set flex-direction here.
+     The tiles keep their plate and border on mobile; they just tighten.
+     Vertical padding stays at --s-3: at --s-2 the tiles measured 37px tall,
+     under the 44px minimum touch target. */
+  .offer__pick { gap: var(--s-2); }
+  .offer__swatch { padding: var(--s-3); gap: var(--s-2); }
+  .offer__dot { width: 0.8rem; height: 0.8rem; }
 
   .offer__tag { margin-top: var(--s-3); }
   .offer__legend { margin-bottom: var(--s-3); }

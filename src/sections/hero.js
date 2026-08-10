@@ -115,15 +115,34 @@ export default function mount(root) {
               .join('')}
           </dl>
 
-          <a class="hero__link" href="#science" data-reveal="rise">
-            <span>${LINK_LABEL}</span>
-            <svg class="hero__link-arrow" viewBox="0 0 12 12" width="12" height="12"
-                 aria-hidden="true" focusable="false">
-              <path d="M6 1.5v9M2.2 6.9 6 10.7l3.8-3.8"
-                    fill="none" stroke="currentColor" stroke-width="1.1"
-                    stroke-linecap="square" />
-            </svg>
-          </a>
+          <!-- Two routes out of the hero, in order of audience size.
+               "See the science" is the scenic route for a first-time reader.
+               "Reorder" jumps a returning customer straight to the ask — they
+               already know the product and should not have to scroll thirteen
+               sections to buy it again. Deliberately the quieter of the two in
+               weight, since the nav already carries a filled Buy CTA and two
+               competing buttons in one frame would undo the hero's restraint. -->
+          <div class="hero__acts" data-reveal="rise">
+            <a class="hero__link" href="#science">
+              <span>${LINK_LABEL}</span>
+              <svg class="hero__link-arrow" viewBox="0 0 12 12" width="12" height="12"
+                   aria-hidden="true" focusable="false">
+                <path d="M6 1.5v9M2.2 6.9 6 10.7l3.8-3.8"
+                      fill="none" stroke="currentColor" stroke-width="1.1"
+                      stroke-linecap="square" />
+              </svg>
+            </a>
+
+            <a class="hero__reorder" href="#offer">
+              <span>Reorder</span>
+              <svg class="hero__reorder-arrow" viewBox="0 0 12 12" width="12" height="12"
+                   aria-hidden="true" focusable="false">
+                <path d="M1.5 6h9M6.9 2.2 10.7 6 6.9 9.8"
+                      fill="none" stroke="currentColor" stroke-width="1.1"
+                      stroke-linecap="square" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </div>

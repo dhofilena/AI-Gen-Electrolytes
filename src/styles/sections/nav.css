@@ -1,11 +1,11 @@
-﻿/* ============================================================
-   NAV â€” owned by the nav section agent.
+/* ============================================================
+   NAV — owned by the nav section agent.
    Fixed chrome. Transparent over the hero, blurred ink once past it.
    The CTA is the only filled element; everything else is quiet type.
    Tokens only.
 
    NOTE ON STACKING: `.nav` itself must never carry a transform or
-   will-change:transform â€” that would make it the containing block for
+   will-change:transform — that would make it the containing block for
    the fixed full-screen `.nav__panel`. All bar movement lives on
    `.nav__shell`, which is a sibling of the panel.
    ============================================================ */
@@ -221,7 +221,7 @@
 }
 
 /* No opacity knock-back. At 0.62 the price measured 3.8:1 against the accent
-   fill â€” under AA for 15px text, on the page's primary call to action. The
+   fill — under AA for 15px text, on the page's primary call to action. The
    price is the most consequential word in the nav; it renders at full ink. */
 .nav__cta-price {
   opacity: 1;
@@ -378,7 +378,7 @@
   }
 }
 
-/* Reduced motion: no curtain, no stagger â€” the panel is simply there. */
+/* Reduced motion: no curtain, no stagger — the panel is simply there. */
 @media (prefers-reduced-motion: reduce) {
   .nav__panel {
     clip-path: none;

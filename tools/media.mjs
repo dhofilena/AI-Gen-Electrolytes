@@ -94,7 +94,13 @@ async function submit() {
     if (a.jobId || a.done) continue;
     assertPromptSafe(a);
 
-    const args = ['generate', 'create', a.model, '--prompt', a.prompt, ...paramFlags(a.params), '--json'];
+    /* `refs` are reference images passed to the model (repeatable --image).
+       Used for the product shots, which must be built FROM the real packaging
+       rather than imagined — a generated approximation of a real label is
+       fake packaging. */
+    const refFlags = (a.refs || []).flatMap((r) => ['--image', r]);
+
+    const args = ['generate', 'create', a.model, '--prompt', a.prompt, ...refFlags, ...paramFlags(a.params), '--json'];
     process.stdout.write(`submit  ${a.name} … `);
     try {
       const out = await hf(args);

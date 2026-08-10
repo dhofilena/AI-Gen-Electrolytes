@@ -186,6 +186,93 @@
       "jobId": "830985c3-9eb9-4f07-9603-36f8c9ade93d",
       "done": true,
       "file": "/media/product-glass-pour.png"
+    },
+    {
+      "name": "shot-berry",
+      "kind": "image",
+      "model": "nano_banana_pro",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "refs": [
+        "public/img/packet-berry.png"
+      ],
+      "prompt": "Cinematic hero product photograph. The stick packet stands upright, floating in a deep near-black studio void. Behind and around it a billowing plume of deep magenta crimson berry powder dissolves through clear water, catching a hard rim light from behind so the packet edge glows and the powder blooms with volumetric light. Fine bubbles drift upward. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium supplement brand campaign, appetising and clean. No text, no captions, no watermark, no extra packaging, no hands, no people. Reproduce the product packet exactly as in the reference image — identical packaging artwork, identical logo, identical wording, identical colours and proportions. Do not redesign, re-letter, translate, restyle or invent any part of the label. The packet must remain perfectly legible and undistorted.",
+      "jobId": "e07c95cb-014d-4f61-9459-c920fa2473ac",
+      "done": true,
+      "file": "/media/shot-berry.png"
+    },
+    {
+      "name": "shot-lemonade",
+      "kind": "image",
+      "model": "nano_banana_pro",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "refs": [
+        "public/img/packet-lemonade.png"
+      ],
+      "prompt": "Cinematic hero product photograph. The stick packet stands upright, floating in a deep near-black studio void. Behind and around it a billowing plume of luminous pale lemon yellow powder dissolves through clear water, catching a hard rim light from behind so the packet edge glows and the powder blooms with volumetric light. Fine bubbles drift upward. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium supplement brand campaign, appetising and clean. No text, no captions, no watermark, no extra packaging, no hands, no people. Reproduce the product packet exactly as in the reference image — identical packaging artwork, identical logo, identical wording, identical colours and proportions. Do not redesign, re-letter, translate, restyle or invent any part of the label. The packet must remain perfectly legible and undistorted.",
+      "jobId": "15d43067-5da6-4ac7-b6ad-a21ded75c738",
+      "done": true,
+      "file": "/media/shot-lemonade.png"
+    },
+    {
+      "name": "shot-tropical",
+      "kind": "image",
+      "model": "nano_banana_pro",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "refs": [
+        "public/img/packet-tropical.png"
+      ],
+      "prompt": "Cinematic hero product photograph. The stick packet stands upright, floating in a deep near-black studio void. Behind and around it a billowing plume of warm coral peach and mango powder dissolves through clear water, catching a hard rim light from behind so the packet edge glows and the powder blooms with volumetric light. Fine bubbles drift upward. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium supplement brand campaign, appetising and clean. No text, no captions, no watermark, no extra packaging, no hands, no people. Reproduce the product packet exactly as in the reference image — identical packaging artwork, identical logo, identical wording, identical colours and proportions. Do not redesign, re-letter, translate, restyle or invent any part of the label. The packet must remain perfectly legible and undistorted.",
+      "jobId": "7b3f12a6-b54e-424f-ae09-f7647153fc6f",
+      "done": true,
+      "file": "/media/shot-tropical.png"
+    },
+    {
+      "name": "plume-berry",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "prompt": "Cinematic macro photograph: a billowing plume of deep magenta crimson berry-red powder bursting and dissolving through clear water against a deep near-black void, backlit by a hard rim light so the powder blooms with volumetric light and fine bubbles drift upward. The plume spreads to the left and right of frame, leaving a clear empty vertical corridor of dark negative space down the centre of the image. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium beverage campaign lighting. No product, no packaging, no bottle, no packet, no text, no logos, no hands, no people.",
+      "jobId": "33549009-3b9f-4ae6-84b7-e94c171d1359",
+      "done": true,
+      "file": "/media/plume-berry.png"
+    },
+    {
+      "name": "plume-lemonade",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "prompt": "Cinematic macro photograph: a billowing plume of luminous pale lemon yellow powder bursting and dissolving through clear water against a deep near-black void, backlit by a hard rim light so the powder blooms with volumetric light and fine bubbles drift upward. The plume spreads to the left and right of frame, leaving a clear empty vertical corridor of dark negative space down the centre of the image. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium beverage campaign lighting. No product, no packaging, no bottle, no packet, no text, no logos, no hands, no people.",
+      "jobId": "e0377e81-e64a-4719-96b7-c8232db2ea13",
+      "done": true,
+      "file": "/media/plume-lemonade.png"
+    },
+    {
+      "name": "plume-tropical",
+      "kind": "image",
+      "model": "gpt_image_2",
+      "params": {
+        "aspect_ratio": "4:3",
+        "resolution": "2k"
+      },
+      "prompt": "Cinematic macro photograph: a billowing plume of warm coral peach and mango orange powder bursting and dissolving through clear water against a deep near-black void, backlit by a hard rim light so the powder blooms with volumetric light and fine bubbles drift upward. The plume spreads to the left and right of frame, leaving a clear empty vertical corridor of dark negative space down the centre of the image. Dramatic chiaroscuro, deep shadow, shallow depth of field, anamorphic, premium beverage campaign lighting. No product, no packaging, no bottle, no packet, no text, no logos, no hands, no people.",
+      "jobId": "e5d40d55-259b-46d2-99db-00d9b0184263",
+      "done": true,
+      "file": "/media/plume-tropical.png"
     }
   ]
 }

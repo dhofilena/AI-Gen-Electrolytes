@@ -25,24 +25,31 @@
 
 import { gsap, prefersReducedMotion } from '../lib/scroll.js';
 import { revealLines, revealRise, revealMedia, EASE_MASK, DUR, START } from '../lib/reveal.js';
-import { product, flavors, guarantee } from '../data/content.js';
+import { product, flavors, guarantee, gallery } from '../data/content.js';
 
 /* THE PACK SHOT. This frame used to run the three flavour fruit macros — a
    citrus close-up standing in for the product on the one screen where the
    customer is being asked to buy it, on a page that never showed the tub, the
-   powder or a scoop anywhere across thirteen sections.
+   powder or a scoop anywhere across thirteen sections. It then ran an
+   unbranded generated tub, because we did not have the real packaging.
 
-   The tub still is rendering. If it has not landed, the frame falls back to
-   the prepared-drink still that is already on disk — so this section shows the
-   real product either way and the layout is final now, not conditionally.
-   Both are deliberately UNBRANDED: we do not have the real packaging, and a
-   plausible fake label would put invented branding on screen. */
-const PACK = {
-  src: '/media/product-tub.png',
-  alt: 'A tub of the powder with a scoop, on a dark surface',
-  fallbackSrc: '/media/still-hero-glass.png',
-  fallbackAlt: 'A full glass of the prepared drink in daylight',
-};
+   Both are superseded: the client supplied the real packaging, so the frame no longer
+   needs an unbranded stand-in. It now shows the ACTUAL packet for the selected
+   flavour, and changing flavour changes the product on screen rather than just
+   the light in the room.
+
+   Two sources per flavour, in order of preference:
+     shot   — a composed hero render built FROM the real packet (Higgsfield),
+              fills the frame edge to edge.
+     packet — the supplied transparent cut-out. Always on disk, so the frame is
+              never empty. Rendered `contain` on a lit ground, not `cover`,
+              because a cut-out cropped to fill would slice the packaging.
+   `.is-packet` on the figure switches the frame between those two treatments. */
+const packFor = (f) => ({
+  src: f.shot,
+  fallbackSrc: f.packet,
+  alt: `${product.name} ${f.name} stick packet`,
+});
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const usd0 = new Intl.NumberFormat('en-US', {
@@ -76,14 +83,34 @@ export default function mount(root) {
         </header>
 
         <figure class="offer__media grain" data-flavor="${flavors[0].id}">
-          <span class="media-inner offer__inner">
-            <img class="fill offer__shot" src="${PACK.src}" alt="${PACK.alt}"
-                 decoding="async" loading="lazy" />
-          </span>
+          <!-- Slide 0 is the flavour pack shot and re-sources when the flavour
+               changes; the rest are the shared brand slides from content.js.
+               Missing files are dropped at mount, never rendered broken. -->
+          <div class="offer__gallery" role="group" aria-roledescription="carousel"
+               aria-label="${product.name} product images">
+            <ul class="offer__slides" data-slides>
+              <li class="offer__slide is-on" data-slide="0" role="group"
+                  aria-roledescription="slide" aria-label="1 of 1">
+                <span class="media-inner offer__inner">
+                  <img class="fill offer__shot" src="${packFor(flavors[0]).src}"
+                       alt="${packFor(flavors[0]).alt}" decoding="async" />
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <button class="offer__arrow offer__arrow--prev" type="button" data-prev
+                  aria-label="Previous image" hidden>
+            <span class="offer__chev" aria-hidden="true"></span>
+          </button>
+          <button class="offer__arrow offer__arrow--next" type="button" data-next
+                  aria-label="Next image" hidden>
+            <span class="offer__chev" aria-hidden="true"></span>
+          </button>
+
           <!-- Selection still has a visible consequence on the frame: the
                accent light in the room crosses over with the flavour, on the
-               same curve #flavors uses. Tinting the product itself would be
-               dressing an unbranded tub up as three different SKUs. -->
+               same curve #flavors uses. -->
           <span class="offer__wash" aria-hidden="true"></span>
           <span class="offer__scrim" aria-hidden="true"></span>
 
@@ -93,18 +120,25 @@ export default function mount(root) {
               <span class="offer__capnote t-micro">${flavors[0].note}</span>
             </span>
 
-            <span class="offer__pick" role="group" aria-label="Flavor">
-              ${flavors
-                .map(
-                  (f, i) => `
-                <label class="offer__swatch${i === 0 ? ' is-on' : ''}" data-flavor="${f.id}">
-                  <input class="offer__radio u-sr" type="radio" name="offer-flavor"
-                         value="${f.id}" aria-label="${f.name}"${i === 0 ? ' checked' : ''} />
-                  <span class="offer__dot" aria-hidden="true"></span>
-                  <span class="offer__swatchname">${f.short}</span>
-                </label>`
-                )
-                .join('')}
+            <span class="offer__thumbs" data-thumbs hidden></span>
+
+            <span class="offer__pick" role="group" aria-labelledby="offer-picklabel">
+              <span class="offer__picklabel t-eyebrow t-eyebrow--bare" id="offer-picklabel">
+                Choose your flavor
+              </span>
+              <span class="offer__picklist">
+                ${flavors
+                  .map(
+                    (f, i) => `
+                  <label class="offer__swatch${i === 0 ? ' is-on' : ''}" data-flavor="${f.id}">
+                    <input class="offer__radio u-sr" type="radio" name="offer-flavor"
+                           value="${f.id}" aria-label="${f.name}"${i === 0 ? ' checked' : ''} />
+                    <span class="offer__dot" aria-hidden="true"></span>
+                    <span class="offer__swatchname">${f.short}</span>
+                  </label>`
+                  )
+                  .join('')}
+              </span>
             </span>
           </figcaption>
         </figure>
@@ -201,24 +235,167 @@ export default function mount(root) {
 
   /* ---------- selection → visible consequence ---------- */
 
-  /* One swap only, then give up — never leave a broken node in the ask. */
-  if (shot) {
-    shot.addEventListener(
-      'error',
-      () => {
-        shot.src = PACK.fallbackSrc;
-        shot.alt = PACK.fallbackAlt;
-      },
-      { once: true }
-    );
+  /* The composed hero render may not exist for a given flavour yet. Fall back
+     to that flavour's real packet cut-out and switch the frame to `contain` so
+     the packaging is shown whole rather than cropped. Per-flavour, not once
+     globally — each swap re-arms, since one flavour having a shot says nothing
+     about the others. Guarded so a missing packet cannot loop. */
+  function setShot(f) {
+    if (!shot) return;
+    const p = packFor(f);
+    shot.dataset.fallen = '';
+    shot.alt = p.alt;
+    media?.classList.remove('is-packet');
+
+    shot.onerror = () => {
+      if (shot.dataset.fallen === '1') { shot.onerror = null; return; }
+      shot.dataset.fallen = '1';
+      media?.classList.add('is-packet');
+      shot.src = p.fallbackSrc;
+    };
+
+    shot.src = p.src;
   }
+
+  setShot(flavors[0]);
+
+  /* ---------- gallery ---------- */
+
+  const slidesEl = q('[data-slides]');
+  const thumbsEl = q('[data-thumbs]');
+  const prevBtn = q('[data-prev]');
+  const nextBtn = q('[data-next]');
+
+  let extra = [];   // brand slides that actually resolved
+  let index = 0;
+  let shownFlavor = state.flavor;  // which flavour the gallery is currently showing
+
+  /* Probe each file before building a slide for it. A 404 in this section is a
+     dead frame in the middle of the buy flow, so the gallery only ever contains
+     images that are genuinely on disk. */
+  const exists = (src) =>
+    new Promise((res) => {
+      const im = new Image();
+      im.onload = () => res(true);
+      im.onerror = () => res(false);
+      im.src = src;
+    });
+
+  function slideCount() { return 1 + extra.length; }
+
+  function renderGallery() {
+    if (!slidesEl) return;
+    const single = slideCount() < 2;
+
+    // slide 0 already exists; append the resolved brand slides once
+    slidesEl.querySelectorAll('[data-extra]').forEach((n) => n.remove());
+    extra.forEach((g, i) => {
+      const li = document.createElement('li');
+      li.className = 'offer__slide';
+      li.dataset.slide = String(i + 1);
+      li.dataset.extra = '1';
+      li.setAttribute('role', 'group');
+      li.setAttribute('aria-roledescription', 'slide');
+      const im = document.createElement('img');
+      im.className = 'fill offer__still';
+      im.src = g.src;
+      im.alt = g.alt;
+      im.decoding = 'async';
+      im.loading = 'lazy';
+      li.appendChild(im);
+      slidesEl.appendChild(li);
+    });
+
+    [...slidesEl.children].forEach((li, i) =>
+      li.setAttribute('aria-label', `${i + 1} of ${slideCount()}`)
+    );
+
+    if (thumbsEl) {
+      thumbsEl.hidden = single;
+      thumbsEl.innerHTML = '';
+      if (!single) {
+        for (let i = 0; i < slideCount(); i++) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'offer__thumb' + (i === index ? ' is-on' : '');
+          b.dataset.go = String(i);
+          b.setAttribute('aria-label', i === 0 ? 'Product' : extra[i - 1].label);
+          b.innerHTML = `<span class="offer__thumbbar" aria-hidden="true"></span><span class="offer__thumblabel">${
+            i === 0 ? 'Product' : extra[i - 1].label
+          }</span>`;
+          thumbsEl.appendChild(b);
+        }
+      }
+    }
+
+    if (prevBtn) prevBtn.hidden = single;
+    if (nextBtn) nextBtn.hidden = single;
+    show(index);
+  }
+
+  function show(i) {
+    if (!slidesEl) return;
+    const n = slideCount();
+    index = ((i % n) + n) % n;
+    [...slidesEl.children].forEach((li, k) => li.classList.toggle('is-on', k === index));
+    thumbsEl?.querySelectorAll('.offer__thumb').forEach((b, k) => {
+      b.classList.toggle('is-on', k === index);
+      b.setAttribute('aria-current', k === index ? 'true' : 'false');
+    });
+    media?.classList.toggle('is-still', index !== 0);
+  }
+
+  prevBtn?.addEventListener('click', () => show(index - 1));
+  nextBtn?.addEventListener('click', () => show(index + 1));
+  thumbsEl?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-go]');
+    if (b) show(Number(b.dataset.go));
+  });
+
+  /* Arrow keys while the gallery has focus. */
+  q('.offer__gallery')?.closest('.offer__media')?.addEventListener('keydown', (e) => {
+    if (slideCount() < 2) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1); }
+  });
+
+  /* Horizontal swipe. Vertical drags are left alone so the page still scrolls. */
+  let sx = 0, sy = 0, tracking = false;
+  slidesEl?.addEventListener('pointerdown', (e) => {
+    if (slideCount() < 2) return;
+    sx = e.clientX; sy = e.clientY; tracking = true;
+  });
+  slidesEl?.addEventListener('pointerup', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
+  });
+
+  Promise.all(gallery.map((g) => exists(g.src))).then((ok) => {
+    extra = gallery.filter((_, i) => ok[i]);
+    renderGallery();
+  });
 
   function sync() {
     const f = currentFlavor();
     const p = currentPlan();
 
-    /* One attribute re-themes the frame's accent light. */
+    /* One attribute re-themes the frame's accent light — and now the product
+       on screen changes too, not just the light. */
     if (media) media.dataset.flavor = f.id;
+    setShot(f);
+
+    /* Snap back to the pack shot when the FLAVOUR changes. Picking a flavour
+       while parked on the Supplement Facts slide otherwise leaves you staring
+       at the same panel with no sign the choice registered. Guarded on the
+       flavour actually changing, so switching delivery plan does not yank the
+       gallery out from under someone mid-read. */
+    if (shownFlavor !== f.id) {
+      shownFlavor = f.id;
+      show(0);
+    }
 
     qa('.offer__swatch').forEach((c) =>
       c.classList.toggle('is-on', c.dataset.flavor === f.id)

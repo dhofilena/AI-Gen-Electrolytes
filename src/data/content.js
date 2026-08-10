@@ -31,6 +31,10 @@ export const flavors = [
     img: '/img/lemon-macro.png',
     video: '/media/flavor-lemonade.mp4',
     poster: '/media/flavor-lemonade.jpg',
+    /* Real BIOptimizers packaging, supplied by the client. `packet` is the
+       transparent cut-out; `shot` is the composed hero render built from it. */
+    packet: '/img/packet-lemonade.png',
+    shot: '/media/shot-lemonade.jpg',
   },
   {
     id: 'tropical',
@@ -43,6 +47,8 @@ export const flavors = [
     img: '/img/peach-macro.png',
     video: '/media/flavor-tropical.mp4',
     poster: '/media/flavor-tropical.jpg',
+    packet: '/img/packet-tropical.png',
+    shot: '/media/shot-tropical.jpg',
   },
   {
     id: 'berry',
@@ -55,6 +61,43 @@ export const flavors = [
     img: '/img/berry-macro.png',
     video: '/media/flavor-berry.mp4',
     poster: '/media/flavor-berry.jpg',
+    packet: '/img/packet-berry.png',
+    shot: '/media/shot-berry.jpg',
+  },
+];
+
+/* PDP GALLERY — the shared brand slides that follow the flavour pack shot in
+   the #offer carousel. These are real BIOptimizers marketing assets supplied
+   by the client, not generated.
+
+   Any file that is not on disk is dropped at runtime rather than rendered as a
+   broken slide, so the gallery degrades to whatever is actually present. Drop
+   the artwork into public/img/ under these names to light each one up. */
+export const gallery = [
+  {
+    src: '/img/pdp-missing.webp',
+    alt: "What your hydration has been missing: a 3:1 potassium-to-sodium ratio, 5 essential electrolytes, 4 forms of bioavailable magnesium, and 9+ trace minerals, zinc and MSM.",
+    label: "What's inside",
+  },
+  {
+    src: '/img/pdp-facts.webp',
+    alt: 'Supplement Facts panel for Thrive Lemonade, Balanced Berry and Tropical Bliss. Serving size 1 stick packet (6.72 g), 4 servings per container. Potassium 610 mg, chloride 690 mg, sodium 210 mg, magnesium 50 mg, calcium 40 mg, plus niacin, vitamins B6 and B12, zinc, copper, manganese, chromium, molybdenum, ionic trace minerals and OptiMSM.',
+    label: 'Supplement Facts',
+  },
+  {
+    src: '/img/pdp-natural.webp',
+    alt: 'Nothing artificial, nothing unnecessary: clean natural sweetness, no added sugar, sugar alcohols, stevia or maltodextrin, sweetened with plant-derived proteins, heavy metal tested.',
+    label: 'Nothing artificial',
+  },
+  {
+    src: '/img/pdp-dissolves.webp',
+    alt: 'Dissolves quickly — mixes clear in seconds.',
+    label: 'Dissolves fast',
+  },
+  {
+    src: '/img/pdp-daypart.webp',
+    alt: 'Hydration for every part of your day: morning to start refreshed, afternoon to stay steady, evening to rest replenished, anytime to feel amazing.',
+    label: 'Any time of day',
   },
 ];
 

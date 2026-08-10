@@ -212,6 +212,61 @@
   white-space: nowrap;
 }
 
+/* The two exits share the aside's foot. `margin-top: auto` moved from the link
+   to this row so the pair sits on the same baseline the single link used to,
+   keeping the aside's tie to the headline intact. */
+.hero__acts {
+  margin-top: auto;
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-5);
+}
+
+.hero__acts .hero__link { margin-top: 0; flex: 1 1 auto; min-width: 0; }
+
+/* Reorder — for someone who already owns it and just wants to buy again.
+   Hairline-bounded rather than filled: the nav already carries the one
+   saturated Buy CTA, and a second filled button in the opening frame would
+   cost the hero its restraint. */
+.hero__reorder {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: none;
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-3);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 var(--border-hair) rgba(244, 241, 234, 0.42);
+  background: rgba(var(--ink-rgb), 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--on-dark);
+  white-space: nowrap;
+  transition:
+    background var(--d-fast) var(--e-soft),
+    box-shadow var(--d-fast) var(--e-soft),
+    transform var(--d-fast) var(--e-soft);
+}
+
+.hero__reorder:hover {
+  background: rgba(var(--ink-rgb), 0.68);
+  box-shadow: inset 0 0 0 var(--border-hair) var(--accent);
+  transform: translateY(-1px);
+}
+
+.hero__reorder-arrow { flex: none; }
+
+@media (max-width: 640px) {
+  .hero__acts { gap: var(--s-4); }
+  .hero__reorder { padding: var(--s-3); }
+}
+
 .hero__link {
   position: relative;
   margin-top: auto;
